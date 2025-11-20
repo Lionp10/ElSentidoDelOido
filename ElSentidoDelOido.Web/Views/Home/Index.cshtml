@@ -1,0 +1,363 @@
+﻿@{
+    ViewData["Title"] = "El Sentido del Oído - Servicios de Fonoaudiología";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .hero-content {
+        padding: 3rem 0;
+    }
+
+    .service-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .about-section {
+        background: white;
+        border-radius: 12px;
+        padding: 3rem;
+        margin: 3rem 0;
+    }
+
+    .contact-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, #16255b 0%, #1f3a7a 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+        /* Mejor contraste para enlaces y textos de contacto dentro de la caja */
+        .info-box a {
+            color: #f5f7fb; /* gris muy claro / casi blanco */
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+            .info-box a:hover,
+            .info-box a:focus {
+                color: #ffffff;
+                text-decoration: none;
+            }
+
+        .info-box p.small,
+        .info-box .contact-item .mb-0 {
+            color: #e6eef9; /* texto descriptivo más claro */
+            opacity: 1; /* quitar la semitransparencia para mejor legibilidad */
+        }
+
+        .info-box .contact-item a {
+            display: inline-block;
+            margin-top: 4px;
+            color: #f5f7fb; /* números y enlaces destacados */
+            font-weight: 600;
+        }
+
+        .info-box .contact-item i {
+            color: #f0f5fb; /* iconos más visibles */
+        }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section" id="Inicio">
+    <div class="container">
+        <div class="row align-items-center hero-content">
+            <div class="col-lg-6">
+                <h1 class="hero-title">Tu salud auditiva es nuestro compromiso</h1>
+                <p class="hero-subtitle">
+                    En nuestros centros de fonoaudiología, nos dedicamos a cuidar de tu audición con pasión y profesionalismo.
+                    Ofrecemos servicios especializados y soluciones auditivas personalizadas para mejorar tu calidad de vida.
+                </p>
+                <a href="@Url.Action("Index", "Shift")" class="btn btn-primary btn-lg">
+                    <i class="bi bi-calendar-check"></i> Solicita un Turno Ahora
+                </a>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <img src="~/images/ESDO_BLANCO.webp" alt="Logo El Sentido del Oído" class="img-fluid" style="max-width: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="Nosotros" class="py-5">
+    <div class="container">
+        <div class="about-section">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-header">
+                        <h2 class="section-title">¿Quiénes Somos?</h2>
+                        <div class="section-divider"></div>
+                    </div>
+                    <p class="section-description mb-3">
+                        Nuestros nombres son <strong>Joselina</strong> y <strong>Sandra</strong>, somos Licenciadas en Fonoaudiología oriundas de Arequito, Santa Fe.
+                        Juntas formamos un equipo de trabajo agradable donde potenciamos nuestras distintas formaciones con un objetivo bien claro:
+                        compartir información fundamental para conservar la salud auditiva.
+                    </p>
+                    <p class="section-description">
+                        <strong>El Sentido del Oído</strong> es un proyecto donde anhelamos poner información en mano de toda la población.
+                        Hacemos un trabajo de divulgación y concientización sobre los cuidados fundamentales para prevenir daños auditivos,
+                        reflejando nuestro amor por la audiología y garantizando siempre un grato proceso, dando prioridad al bienestar del paciente.
+                    </p>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="~/images/Profesionales.webp" alt="Profesionales" class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="Servicios" class="py-5" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Servicios Audiológicos</h2>
+            <div class="section-divider"></div>
+            <p class="section-description">Contamos con los servicios más actualizados en fonoaudiología para tu bienestar auditivo</p>
+        </div>
+
+        <div class="service-grid">
+            <!-- Service 1 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-ear"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Audiometría y Logoaudiometría</h5>
+                <p class="text-muted mb-3">Pruebas subjetivas para detectar pérdida auditiva y evaluar cómo procesas la información auditivo-verbal.</p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_1" class="btn btn-sm btn-outline-primary">Saber más</a>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-soundwave"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Otoemisiones Acústicas</h5>
+                <p class="text-muted mb-3">Pruebas objetivas para detectar tempranamente hipoacusias en recién nacidos, conforme a la Ley N° 25415.</p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_2" class="btn btn-sm btn-outline-primary">Saber más</a>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-headphones"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Selección de Audífonos</h5>
+                <p class="text-muted mb-3">Preselección y selección personalizada de audífonos adaptados a tu estilo de vida y necesidades.</p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_3" class="btn btn-sm btn-outline-primary">Saber más</a>
+            </div>
+
+            <!-- Service 4 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-reception-2"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Tratamiento de Tinnitus</h5>
+                <p class="text-muted mb-3">Tratamiento especializado y entrenamiento para manejar el tinnitus (zumbidos en los oídos).</p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_4" class="btn btn-sm btn-outline-primary">Saber más</a>
+            </div>
+
+            <!-- Service 5 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Rehabilitación Auditiva</h5>
+                <p class="text-muted mb-3">Programa completo de rehabilitación y adaptación a audífonos con seguimiento profesional continuo.</p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_5" class="btn btn-sm btn-outline-primary">Saber más</a>
+            </div>
+
+            <!-- Service 6 -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Consulta Inicial</h5>
+                <p class="text-muted mb-3">Primera consulta completa donde evaluamos tus necesidades y diseñamos un plan personalizado.</p>
+                <a href="@Url.Action("Index", "Shift")" class="btn btn-sm btn-primary">Agendar Consulta</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="Contacto" class="py-5">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2 class="section-title">Ponte en Contacto</h2>
+            <div class="section-divider"></div>
+        </div>
+
+        <div class="row">
+            <div class="info-box">
+                <h5 class="mb-4">Información de Contacto</h5>
+
+                <div class="contact-item mb-3">
+                    <i class="bi bi-envelope fs-5 me-3"></i>
+                    <div>
+                        <p class="mb-0 small opacity-75">Email</p>
+                        <a href="mailto:elsentidodeloido@gmail.com">elsentidodeloido@gmail.com</a>
+                    </div>
+                </div>
+
+                <div class="contact-item mb-3">
+                    <i class="bi bi-whatsapp fs-5 me-3"></i>
+                    <div>
+                        <p class="mb-0 small opacity-75">WhatsApp - Sandra</p>
+                        <a href="https://wa.me/543464512604?text=¡Hola!%20¿Me%20puedes%20dar%20más%20información?" target="_blank">+54 3464 512604</a>
+                    </div>
+                </div>
+
+                <div class="contact-item mb-3">
+                    <i class="bi bi-whatsapp fs-5 me-3"></i>
+                    <div>
+                        <p class="mb-0 small opacity-75">WhatsApp - Joselina</p>
+                        <a href="https://wa.me/543464543897?text=¡Hola!%20¿Me%20puedes%20dar%20más%20información?" target="_blank">+54 3464 543897</a>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="bi bi-geo-alt fs-5 me-3"></i>
+                    <div>
+                        <p class="mb-0 small opacity-75">Consultorios</p>
+                        <a href="https://www.google.com.ar/maps/search/el+sentido+del+o%C3%ADdo/@@-33.1486347,-61.4730777,16z" target="_blank">Ver en Google Maps</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-lg-12">
+            <div class="contact-form">
+                <h5 class="mb-4 fw-bold">Formulario de Contacto</h5>
+
+                @using (Html.BeginForm("EnviarFormulario", "Home", FormMethod.Post))
+                {
+                    <div class="mb-3">
+                        <label for="nombreCompleto" class="form-label">Nombre Completo</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="nombreCompleto" name="NombreCompleto" placeholder="Tu nombre completo" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="Email" placeholder="tu@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" id="telefono" name="Telefono" placeholder="+54 3464 512604" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mensaje" class="form-label">Mensaje</label>
+                        <textarea class="form-control" id="mensaje" name="Mensaje" rows="4" placeholder="Cuéntanos cómo podemos ayudarte..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Enviar Mensaje
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modals -->
+<div class="modal fade" id="servicio_1" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Audiometría y Logoaudiometría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Pruebas subjetivas que nos permiten detectar una pérdida auditiva (hipoacusia) y evaluar el modo en el que se procesa la información auditivo-verbal.</p>
+                <p><strong>Duración:</strong> 45 minutos</p>
+                <p><strong>Indicaciones:</strong> Personas con posible pérdida auditiva, evaluación de audición en general.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="servicio_2" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Otoemisiones Acústicas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Pruebas objetivas para detectar tempranamente hipoacusias, respondiendo a la Ley N° 25415: "Todo recién nacido tiene derecho a ser evaluado auditivamente para descartar hipoacusias pre, peri y/o postnatal".</p>
+                <p><strong>Duración:</strong> 15-20 minutos</p>
+                <p><strong>Indicaciones:</strong> Especialmente para recién nacidos y niños pequeños.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="servicio_3" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preselección y Selección de Audífonos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>A partir del resultado de los estudios audiológicos y las individualidades de cada paciente (actividad laboral, vida social, edad, destreza motriz), decidimos el equipamiento oportuno.</p>
+                <p><strong>Duración:</strong> 60 minutos</p>
+                <p><strong>Incluye:</strong> Evaluación personalizada y prueba de audífonos.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="servicio_4" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tratamiento de Tinnitus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Programa especializado de entrenamiento y tratamiento para ayudarte a manejar los zumbidos o ruidos en los oídos (tinnitus).</p>
+                <p><strong>Sesiones:</strong> Plan personalizado según necesidades</p>
+                <p><strong>Beneficios:</strong> Mejor calidad de vida y adaptación al tinnitus.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="servicio_5" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rehabilitación Auditiva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Programa completo de rehabilitación auditiva que te acompaña en todo el proceso de adaptación a audífonos o implantes.</p>
+                <p><strong>Incluye:</strong> Entrenamiento auditivo, consejos de comunicación, y seguimiento continuo.</p>
+                <p><strong>Duración:</strong> Plan a largo plazo según progreso</p>
+            </div>
+        </div>
+    </div>
+</div>

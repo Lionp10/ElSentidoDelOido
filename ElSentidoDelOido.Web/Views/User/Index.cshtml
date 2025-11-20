@@ -1,0 +1,279 @@
+﻿@model IEnumerable<ElSentidoDelOido.Negocio.DTOs.UserDTO>
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16255b;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #1e3a8a;
+            border-color: #1e3a8a;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.3);
+        }
+
+    .card-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-header-custom {
+        background: linear-gradient(to right, #f8f9fa, #f3f4f6);
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+        .table-header-custom th {
+            color: #16255b;
+            font-weight: 600;
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+
+        .table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #374151;
+    }
+
+    .avatar-small {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .email-text {
+        color: #4b5563;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+
+    .phone-text {
+        color: #4b5563;
+    }
+
+    .badge-status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .badge-status-inactive {
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .btn-icon-edit {
+        background-color: #dbeafe;
+        color: #0369a1;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+        .btn-icon-edit:hover {
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+    .btn-icon-delete {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+        .btn-icon-delete:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+
+    .btn-group-sm {
+        gap: 0.5rem;
+    }
+
+    .empty-state {
+        background: linear-gradient(135deg, rgba(22, 37, 91, 0.05), rgba(30, 58, 138, 0.05));
+        border-radius: 12px;
+        margin: 2rem 1rem;
+    }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #16255b;
+            opacity: 0.3;
+        }
+
+        .empty-state h5 {
+            color: #16255b;
+            font-weight: 600;
+        }
+</style>
+
+<div class="container-fluid py-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="header-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <h1 class="page-title mb-0">Gestión de Usuarios</h1>
+                    <p class="text-muted small mt-1">Administra los usuarios registrados del sistema</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Create")" class="btn btn-primary-custom btn-lg">
+                <i class="bi bi-plus-lg"></i> Nuevo Usuario
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Users Table -->
+    <div class="card card-custom">
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr class="table-header-custom">
+                                <th style="width: 30%;">Nombre Completo</th>
+                                <th style="width: 25%;">Email</th>
+                                <th style="width: 18%;">Teléfono</th>
+                                <th style="width: 12%;">Estado</th>
+                                <th style="width: 15%; text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var usuario in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-small">
+                                                @( (usuario.FirstName ?? "-").Substring(0, 1).ToUpper() )
+                                            </div>
+                                            <span>@(usuario.FirstName) @(usuario.LastName)</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="email-text">@usuario.Email</span>
+                                    </td>
+                                    <td>
+                                        <span class="phone-text">-</span> @* No hay Phone en UserDTO; muestra '-' o añade la propiedad si la tienes *@
+                                    </td>
+                                    <td>
+                                        @if (usuario.Enabled == true)
+                                        {
+                                            <span class="badge badge-status-active">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-status-inactive">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="@Url.Action("Edit", new { id = usuario.Id })"
+                                               class="btn btn-icon-edit" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="@Url.Action("Delete", new { id = usuario.Id })"
+                                               class="btn btn-icon-delete" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state py-5">
+                    <div class="text-center">
+                        <i class="bi bi-inbox"></i>
+                        <h5 class="mt-3 mb-2">No hay usuarios registrados</h5>
+                        <p class="text-muted mb-4">Comienza creando un nuevo usuario para gestionar el sistema</p>
+                        <a href="@Url.Action("Create")" class="btn btn-primary-custom">
+                            <i class="bi bi-plus-lg"></i> Crear Primer Usuario
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

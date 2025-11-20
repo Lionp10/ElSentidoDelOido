@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Panel Administrativo</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --primary-color: #16255b;
+            --primary-dark: #0f1940;
+            --primary-light: #2a3f7f;
+            --accent-color: #00bcd4;
+            --accent-light: #e0f7fa;
+            --neutral-light: #f5f5f5;
+            --neutral-gray: #e0e0e0;
+            --text-dark: #212121;
+            --text-light: #757575;
+            --success: #4caf50;
+            --danger: #f44336;
+            --warning: #ff9800;
+        }
+
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--neutral-light);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+            .sidebar.collapsed {
+                transform: translateX(-280px);
+            }
+
+        /* Sidebar Logo Section */
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+            .sidebar-logo img {
+                height: 40px;
+                width: auto;
+            }
+
+            .sidebar-logo h5 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 18px;
+                white-space: nowrap;
+                flex: 1;
+            }
+
+        .sidebar-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+            .sidebar-toggle:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 20px 0;
+            list-style: none;
+            margin: 0;
+        }
+
+            .sidebar-nav li {
+                margin: 0;
+            }
+
+            .sidebar-nav a {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 20px;
+                color: rgba(255, 255, 255, 0.8);
+                text-decoration: none;
+                transition: all 0.3s ease;
+                font-size: 15px;
+                font-weight: 500;
+                border-left: 3px solid transparent;
+                position: relative;
+            }
+
+                .sidebar-nav a:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white;
+                    border-left-color: var(--accent-color);
+                }
+
+                .sidebar-nav a.active {
+                    background-color: rgba(0, 188, 212, 0.2);
+                    color: var(--accent-color);
+                    border-left-color: var(--accent-color);
+                }
+
+            .sidebar-nav i {
+                font-size: 18px;
+                width: 24px;
+                text-align: center;
+            }
+
+        /* Sidebar Section Title */
+        .sidebar-section {
+            padding: 15px 20px 8px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            background-color: var(--neutral-light);
+            min-height: 100vh;
+        }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid var(--neutral-gray);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .top-bar-toggle {
+            display: none;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s ease;
+        }
+
+            .top-bar-toggle:hover {
+                background: var(--primary-dark);
+            }
+
+        .top-bar-title h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .top-bar-title p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: var(--neutral-light);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+            .user-profile:hover {
+                background: var(--neutral-gray);
+            }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            padding: 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+            .page-header h2 {
+                font-size: 28px;
+                font-weight: 700;
+                color: var(--primary-color);
+                margin: 0;
+            }
+
+            .page-header .btn {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+            }
+
+        .btn-secondary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+            .btn-secondary:hover {
+                background-color: #00acc1;
+                border-color: #00acc1;
+            }
+
+        /* Responsive - Mobile */
+        @@media (max-width: 768px) {
+            .sidebar
+
+        {
+            width: 250px;
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(0);
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .top-bar-toggle {
+            display: block;
+        }
+
+        .sidebar-toggle {
+            display: block;
+        }
+
+        .content-wrapper {
+            padding: 20px 15px;
+        }
+
+        .page-header h2 {
+            font-size: 22px;
+        }
+
+        .top-bar {
+            padding: 15px 20px;
+        }
+
+        .top-bar-title h1 {
+            font-size: 20px;
+        }
+
+        .top-bar-title p {
+            display: none;
+        }
+
+        }
+
+        /* Scrollbar personalizada */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+            .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Logo Section -->
+        <div class="sidebar-logo">
+            <img src="~/images/ESDOLOGO.png" alt="Logo" />
+            <h5>Admin Panel</h5>
+        </div>
+
+        <!-- Navigation Items -->
+        <ul class="sidebar-nav">
+            <!-- Main Section -->
+            <li class="sidebar-section">Panel Principal</li>
+
+            <li>
+                <a href="@Url.Action("Index", "Dashboard")" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Management Section -->
+            <li class="sidebar-section">Gestión</li>
+
+            <li>
+                <a href="@Url.Action("Index", "User")" class="nav-link">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Usuarios</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="@Url.Action("Index", "TipoTurno")" class="nav-link">
+                    <i class="bi bi-bookmark-check"></i>
+                    <span>Tipos de Turno</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="@Url.Action("Index", "Turno")" class="nav-link">
+                    <i class="bi bi-calendar2-check"></i>
+                    <span>Turnos Solicitados</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="@Url.Action("Index", "Horario")" class="nav-link">
+                    <i class="bi bi-clock-fill"></i>
+                    <span>Horarios</span>
+                </a>
+            </li>
+
+            <!-- Configuration Section -->
+            <li class="sidebar-section">Configuración</li>
+
+            <li>
+                <a href="@Url.Action("Index", "Configuracion")" class="nav-link">
+                    <i class="bi bi-gear-fill"></i>
+                    <span>Configuración</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="@Url.Action("Index", "Reportes")" class="nav-link">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <span>Reportes</span>
+                </a>
+            </li>
+
+            <!-- Session Section -->
+            <li class="sidebar-section" style="margin-top: auto; padding-top: 20px; border-top: 2px solid rgba(255, 255, 255, 0.15);">Sesión</li>
+
+            <li>
+                <a href="@Url.Action("LogOut", "Auth")" class="nav-link">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button class="top-bar-toggle" id="topBarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="top-bar-title">
+                    <h1>@ViewData["Title"]</h1>
+                    <p>Bienvenido al panel de administración</p>
+                </div>
+            </div>
+
+            <div class="top-bar-right">
+                <div class="user-profile">
+                    <div class="user-avatar">AD</div>
+                    <span style="color: var(--text-dark); font-weight: 600;">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-wrapper">
+            @RenderBody()
+
+            @RenderSection("Scripts", required: false)
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const sidebar = $('#sidebar');
+            const mainContent = $('#mainContent');
+            const topBarToggle = $('#topBarToggle');
+
+            // Toggle sidebar on button click
+            topBarToggle.click(function () {
+                sidebar.toggleClass('collapsed');
+                mainContent.toggleClass('expanded');
+            });
+
+            // Set active navigation item based on current URL
+            const currentUrl = window.location.href;
+            $('.sidebar-nav a').each(function () {
+                if (this.href === currentUrl || currentUrl.includes(this.href)) {
+                    $(this).addClass('active');
+                }
+            });
+
+            // Cerrar sidebar en móvil cuando se hace clic en un enlace
+            if ($(window).width() <= 768) {
+                $('.sidebar-nav a').click(function () {
+                    sidebar.addClass('collapsed');
+                    mainContent.removeClass('expanded');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,697 @@
+﻿@model ElSentidoDelOido.Web.Models.ShiftIndexViewModel
+
+@{
+    ViewData["Title"] = "Solicitar Turno Online";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Estilos para el formulario de turnos */
+
+    /* Variables de color */
+    :root {
+        --color-primary: #16255b;
+        --color-secondary: #02205C;
+        --color-accent: #FFB81C;
+        --color-light-bg: #F5F7FA;
+        --color-success: #10B981;
+        --color-error: #EF4444;
+    }
+
+    .shift-container {
+        background: linear-gradient(135deg, rgba(22, 37, 91, 0.05) 0%, rgba(255, 184, 28, 0.03) 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .shift-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(22, 37, 91, 0.1);
+        overflow: hidden;
+    }
+
+    /* Stepper */
+    .stepper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30px;
+        background: white;
+        border-bottom: 2px solid var(--color-light-bg);
+    }
+
+    .stepper-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+        .stepper-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-light-bg);
+            transform: translateY(-50%);
+            z-index: -1;
+        }
+
+        .stepper-item.active:not(:last-child)::after {
+            background-color: var(--color-primary);
+        }
+
+    .stepper-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--color-light-bg);
+        border: 3px solid var(--color-light-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #666;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .stepper-item.active .stepper-circle {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(22, 37, 91, 0.3);
+    }
+
+    .stepper-item.completed .stepper-circle {
+        background-color: var(--color-success);
+        border-color: var(--color-success);
+        color: white;
+    }
+
+        .stepper-item.completed .stepper-circle::after {
+            content: '✓';
+        }
+
+    .stepper-label {
+        margin-left: 15px;
+        font-weight: 500;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .stepper-item.active .stepper-label {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    /* Contenido de pasos */
+    .step-content {
+        display: none;
+        padding: 40px;
+        animation: fadeIn 0.3s ease;
+    }
+
+        .step-content.active {
+            display: block;
+        }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* Inputs personalizados */
+    .form-control-shift {
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-shift:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(22, 37, 91, 0.1);
+            outline: none;
+        }
+
+        .form-control-shift::placeholder {
+            color: #999;
+        }
+
+    /* Selección de tipo de turno - Cards */
+    .turno-card {
+        border: 2px solid #E5E7EB;
+        border-radius: 10px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        margin-bottom: 15px;
+    }
+
+        .turno-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.1);
+        }
+
+        .turno-card.selected {
+            border-color: var(--color-primary);
+            background-color: rgba(22, 37, 91, 0.05);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.15);
+        }
+
+        .turno-card input[type="radio"] {
+            margin-right: 15px;
+            accent-color: var(--color-primary);
+            cursor: pointer;
+        }
+
+    .turno-card-text {
+        color: #1F2937;
+        font-weight: 500;
+    }
+
+    /* Selección de fecha - Calendario */
+    .calendar-input {
+        accent-color: var(--color-primary);
+    }
+
+    /* Selección de horarios */
+    .horarios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .horario-btn {
+        padding: 12px;
+        border: 2px solid #E5E7EB;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        color: #1F2937;
+    }
+
+        .horario-btn:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .horario-btn.selected {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+            color: white;
+        }
+
+        .horario-btn:disabled {
+            background-color: #F3F4F6;
+            border-color: #D1D5DB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+    /* Grupo de entrada */
+    .input-group-shift {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+        .input-group-shift label {
+            font-weight: 600;
+            color: #1F2937;
+            font-size: 14px;
+        }
+
+        .input-group-shift.full {
+            grid-column: 1 / -1;
+        }
+
+    /* Grid de formulario */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+        .form-grid .input-group-shift.full {
+            grid-column: 1 / -1;
+        }
+
+    /* Botones de navegación */
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        justify-content: space-between;
+    }
+
+    .btn-shift {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-shift-primary {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+        .btn-shift-primary:hover {
+            background-color: var(--color-secondary);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.3);
+        }
+
+    .btn-shift-secondary {
+        background-color: transparent;
+        color: var(--color-primary);
+        border: 2px solid var(--color-primary);
+    }
+
+        .btn-shift-secondary:hover {
+            background-color: rgba(22, 37, 91, 0.05);
+        }
+
+    .btn-shift:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Validación */
+    .error-message {
+        color: var(--color-error);
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .input-group-shift.error .form-control-shift {
+        border-color: var(--color-error);
+    }
+
+    /* Resumen del turno */
+    .resumen-card {
+        background: rgba(22, 37, 91, 0.05);
+        border-left: 4px solid var(--color-primary);
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+
+    .resumen-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+
+    .resumen-item-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .resumen-item-value {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .stepper
+
+    {
+        padding: 20px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .stepper-item {
+        flex-basis: 100%;
+    }
+
+        .stepper-item:not(:last-child)::after {
+            display: none;
+        }
+
+    .step-content {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .horarios-grid {
+        grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn-shift {
+        width: 100%;
+    }
+
+    .stepper-label {
+        display: none;
+    }
+
+    }
+</style>
+
+<div class="shift-container">
+    <div class="container">
+        <div class="shift-card">
+
+            <!-- Stepper -->
+            <div class="stepper">
+                <div class="stepper-item active" data-step="1">
+                    <div class="stepper-circle">1</div>
+                    <div class="stepper-label">Tipo de Turno</div>
+                </div>
+                <div class="stepper-item" data-step="2">
+                    <div class="stepper-circle">2</div>
+                    <div class="stepper-label">Fecha y Hora</div>
+                </div>
+                <div class="stepper-item" data-step="3">
+                    <div class="stepper-circle">3</div>
+                    <div class="stepper-label">Datos Personales</div>
+                </div>
+            </div>
+
+            <!-- Formulario -->
+            <form id="formularioTurno" method="POST" action="@Url.Action("GuardarTurno", "Shift")">
+
+                <!-- Paso 1: Tipo de Turno -->
+                <div class="step-content active" data-step="1">
+                    <h4 class="mb-4" style="color: var(--color-primary); font-weight: 600;">
+                        <i class="bi bi-stethoscope"></i> Selecciona el tipo de turno
+                    </h4>
+
+                    <div id="tiposTurnoContainer">
+                        @foreach (var tipo in Model.TiposTurnos)
+                        {
+                            <label class="turno-card">
+                                <input type="radio" name="TipoTurnoId" value="@tipo.Id" class="turno-selector" />
+                                <span class="turno-card-text">@tipo.Nombre</span>
+                            </label>
+                        }
+                    </div>
+                    <span id="errorTipo" class="error-message"></span>
+                </div>
+
+                <!-- Paso 2: Fecha y Hora -->
+                <div class="step-content" data-step="2">
+                    <h4 class="mb-4" style="color: var(--color-primary); font-weight: 600;">
+                        <i class="bi bi-calendar-event"></i> Selecciona fecha y hora
+                    </h4>
+
+                    <div class="form-grid">
+                        <div class="input-group-shift">
+                            <label for="fecha">Fecha</label>
+                            <input type="date" id="fecha" name="Fecha" class="form-control-shift calendar-input" required />
+                            <span id="errorFecha" class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-weight: 600; color: #1F2937; font-size: 14px; display: block; margin-bottom: 15px;">
+                            <i class="bi bi-clock"></i> Horarios disponibles
+                        </label>
+                        <div class="horarios-grid" id="horariosContainer">
+                            <p style="color: #999; font-size: 14px;">Selecciona una fecha y tipo de turno para ver horarios disponibles</p>
+                        </div>
+                        <span id="errorHora" class="error-message"></span>
+                    </div>
+                    <input type="hidden" id="horaSeleccionada" name="Hora" />
+                </div>
+
+                <!-- Paso 3: Datos Personales -->
+                <div class="step-content" data-step="3">
+                    <h4 class="mb-4" style="color: var(--color-primary); font-weight: 600;">
+                        <i class="bi bi-person-check"></i> Completa tus datos personales
+                    </h4>
+
+                    <!-- Resumen del turno -->
+                    <div class="resumen-card">
+                        <div class="resumen-item">
+                            <span class="resumen-item-label">Tipo de Turno:</span>
+                            <span class="resumen-item-value" id="resumenTipo">-</span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-item-label">Fecha:</span>
+                            <span class="resumen-item-value" id="resumenFecha">-</span>
+                        </div>
+                        <div class="resumen-item">
+                            <span class="resumen-item-label">Hora:</span>
+                            <span class="resumen-item-value" id="resumenHora">-</span>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group-shift">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" name="Nombre" class="form-control-shift" placeholder="Tu nombre" required />
+                            <span id="errorNombre" class="error-message"></span>
+                        </div>
+
+                        <div class="input-group-shift">
+                            <label for="apellido">Apellido</label>
+                            <input type="text" id="apellido" name="Apellido" class="form-control-shift" placeholder="Tu apellido" required />
+                            <span id="errorApellido" class="error-message"></span>
+                        </div>
+
+                        <div class="input-group-shift">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="Email" class="form-control-shift" placeholder="tu@email.com" required />
+                            <span id="errorEmail" class="error-message"></span>
+                        </div>
+
+                        <div class="input-group-shift">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" id="telefono" name="Telefono" class="form-control-shift" placeholder="+54 3464 123456" required />
+                            <span id="errorTelefono" class="error-message"></span>
+                        </div>
+
+                        <div class="input-group-shift full">
+                            <label for="mensaje">Mensaje (Opcional)</label>
+                            <textarea id="mensaje" name="Mensaje" class="form-control-shift" placeholder="Comparte cualquier información adicional..." rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de navegación -->
+                <div class="button-group">
+                    <button type="button" id="btnAnterior" class="btn-shift btn-shift-secondary" style="display: none;">
+                        <i class="bi bi-arrow-left"></i> Anterior
+                    </button>
+                    <button type="button" id="btnSiguiente" class="btn-shift btn-shift-primary">
+                        Siguiente <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button type="submit" id="btnEnviar" class="btn-shift btn-shift-primary" style="display: none;">
+                        <i class="bi bi-check-circle"></i> Confirmar Turno
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let pasoActual = 1;
+        const totalPasos = 3;
+        const formulario = $('#formularioTurno');
+
+        // Actualizar stepper
+        function actualizarStepper() {
+            $('.stepper-item').each(function () {
+                const paso = $(this).data('step');
+                $(this).removeClass('active completed');
+
+                if (paso < pasoActual) {
+                    $(this).addClass('completed');
+                } else if (paso === pasoActual) {
+                    $(this).addClass('active');
+                }
+            });
+
+            // Mostrar/ocultar contenido
+            $('.step-content').removeClass('active');
+            $(`.step-content[data-step="${pasoActual}"]`).addClass('active');
+
+            // Mostrar/ocultar botones
+            $('#btnAnterior').toggle(pasoActual > 1);
+            $('#btnSiguiente').toggle(pasoActual < totalPasos);
+            $('#btnEnviar').toggle(pasoActual === totalPasos);
+        }
+
+        // Cargar horarios disponibles
+        function cargarHorarios() {
+            const tipoTurnoId = $('input[name="TipoTurnoId"]:checked').val();
+            const fecha = $('#fecha').val();
+
+            if (!tipoTurnoId || !fecha) {
+                $('#horariosContainer').html('<p style="color: #999; font-size: 14px;">Selecciona una fecha y tipo de turno</p>');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ObtenerHorarios", "Shift")',
+                type: 'GET',
+                data: { tipoTurnoId: tipoTurnoId, fecha: fecha },
+                success: function (data) {
+                    let html = '';
+                    data.forEach(function (horario) {
+                        const disabled = !horario.disponible ? 'disabled' : '';
+                        html += `<button type="button" class="horario-btn" data-hora="${horario.hora}" ${disabled}>${horario.hora}</button>`;
+                    });
+                    $('#horariosContainer').html(html);
+
+                    // Restaurar selección anterior si existe
+                    const horaSeleccionada = $('#horaSeleccionada').val();
+                    if (horaSeleccionada) {
+                        $(`.horario-btn[data-hora="${horaSeleccionada}"]`).addClass('selected');
+                    }
+                }
+            });
+        }
+
+        // Validar paso actual
+        function validarPaso() {
+            let esValido = true;
+
+            if (pasoActual === 1) {
+                if (!$('input[name="TipoTurnoId"]:checked').val()) {
+                    $('#errorTipo').text('Debes seleccionar un tipo de turno');
+                    esValido = false;
+                } else {
+                    $('#errorTipo').text('');
+                }
+            } else if (pasoActual === 2) {
+                if (!$('#fecha').val()) {
+                    $('#errorFecha').text('Debes seleccionar una fecha');
+                    esValido = false;
+                } else {
+                    $('#errorFecha').text('');
+                }
+
+                if (!$('#horaSeleccionada').val()) {
+                    $('#errorHora').text('Debes seleccionar una hora');
+                    esValido = false;
+                } else {
+                    $('#errorHora').text('');
+                }
+            } else if (pasoActual === 3) {
+                if (!$('#nombre').val()) {
+                    $('#errorNombre').text('El nombre es requerido');
+                    esValido = false;
+                }
+                if (!$('#apellido').val()) {
+                    $('#errorApellido').text('El apellido es requerido');
+                    esValido = false;
+                }
+                if (!$('#email').val()) {
+                    $('#errorEmail').text('El email es requerido');
+                    esValido = false;
+                }
+                if (!$('#telefono').val()) {
+                    $('#errorTelefono').text('El teléfono es requerido');
+                    esValido = false;
+                }
+            }
+
+            return esValido;
+        }
+
+        // Actualizar resumen
+        function actualizarResumen() {
+            const tipoTurnoId = $('input[name="TipoTurnoId"]:checked').val();
+            const tipoTurnoNombre = $(`input[value="${tipoTurnoId}"]`).siblings('.turno-card-text').text() || '-';
+
+            $('#resumenTipo').text(tipoTurnoNombre);
+            $('#resumenFecha').text(new Date($('#fecha').val()).toLocaleDateString('es-AR'));
+            $('#resumenHora').text($('#horaSeleccionada').val() || '-');
+        }
+
+        // Eventos
+        $(document).on('change', 'input[name="TipoTurnoId"]', function () {
+            $('.turno-card').removeClass('selected');
+            $(this).closest('.turno-card').addClass('selected');
+            cargarHorarios();
+        });
+
+        $(document).on('change', '#fecha', function () {
+            cargarHorarios();
+        });
+
+        $(document).on('click', '.horario-btn:not(:disabled)', function () {
+            $('.horario-btn').removeClass('selected');
+            $(this).addClass('selected');
+            $('#horaSeleccionada').val($(this).data('hora'));
+        });
+
+        $('#btnSiguiente').click(function (e) {
+            e.preventDefault();
+            if (validarPaso()) {
+                if (pasoActual < totalPasos) {
+                    pasoActual++;
+                    actualizarStepper();
+                    if (pasoActual === 3) {
+                        actualizarResumen();
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        });
+
+        $('#btnAnterior').click(function (e) {
+            e.preventDefault();
+            if (pasoActual > 1) {
+                pasoActual--;
+                actualizarStepper();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        $('#btnEnviar').click(function (e) {
+            if (!validarPaso()) {
+                e.preventDefault();
+            }
+        });
+
+        // Inicializar
+        actualizarStepper();
+
+        // Establecer fecha mínima (hoy)
+        const hoy = new Date().toISOString().split('T')[0];
+        $('#fecha').attr('min', hoy);
+    });
+</script>
+
