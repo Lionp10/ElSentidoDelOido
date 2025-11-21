@@ -1,0 +1,110 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using ElSentidoDelOido.Negocio.Services.Interfaces;
+using ElSentidoDelOido.Negocio.DTOs;
+
+namespace ElSentidoDelOido.Web.Controllers
+{
+    public class HolidaysController : Controller
+    {
+        private readonly IHolidaysService _service;
+
+        public HolidaysController(IHolidaysService service)
+        {
+            _service = service;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var model = await _service.GetAllAsync();
+            return View(model);
+        }
+
+        // GET: Holidays/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Holidays/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(HolidaysCreateDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return View(dto);
+
+            try
+            {
+                await _service.CreateAsync(dto);
+                TempData["Mensaje"] = "Feriado creado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+        }
+
+        // GET: Holidays/Edit/5
+        public async Task<IActionResult> Edi0t(int id)
+        {
+            var existing = await _service.GetByIdAsync(id);
+            if (existing == null) return NotFound();
+
+            var dto = new HolidaysUpdateDTO
+            {
+                Id = existing.Id,
+                Date = existing.Date,
+                Message = existing.Message
+            };
+
+            return View(dto);
+        }
+
+        // POST: Holidays/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(HolidaysUpdateDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return View(dto);
+
+            try
+            {
+                await _service.UpdateAsync(dto);
+                TempData["Mensaje"] = "Feriado actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        // POST: Holidays/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _service.DeleteAsync(id);
+            TempData["Mensaje"] = "Feriado eliminado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

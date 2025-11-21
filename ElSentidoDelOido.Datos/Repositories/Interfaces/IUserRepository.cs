@@ -1,4 +1,5 @@
 ﻿using ElSentidoDelOido.Datos.Entities;
+using System.Threading.Tasks;
 
 namespace ElSentidoDelOido.Datos.Repositories.Interfaces
 {
@@ -9,5 +10,7 @@ namespace ElSentidoDelOido.Datos.Repositories.Interfaces
         Task<User> CreateAsync(User user);
         Task<User> UpdateAsync(User user);
         Task DeleteAsync(int id);
+        Task<User?> GetByEmailAsync(string email);
+
     }
 }

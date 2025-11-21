@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using ElSentidoDelOido.Negocio.Validation;
 
 namespace ElSentidoDelOido.Negocio.DTOs
 {
@@ -15,7 +16,6 @@ namespace ElSentidoDelOido.Negocio.DTOs
 
         public int? RoleId { get; set; }
 
-        // Propiedad opcional para mostrar el nombre del rol si lo mapeas desde la entidad
         public string? RoleName { get; set; }
 
         public DateTime DateOfCreation { get; set; }
@@ -33,7 +33,6 @@ namespace ElSentidoDelOido.Negocio.DTOs
         [Display(Name = "Apellido")]
         public string? LastName { get; set; }
 
-
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "Formato de email inválido")]
         [Display(Name = "Email")]
@@ -42,6 +41,8 @@ namespace ElSentidoDelOido.Negocio.DTOs
         [Required(ErrorMessage = "La contraseña es obligatoria")]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
+        [PasswordStrength(MinLength = 8, RequireUppercase = true, RequireLowercase = true, RequireDigit = true, RequireSpecialCharacter = true,
+            ErrorMessage = "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula, número y carácter especial.")]
         public string? Password { get; set; }
 
         [Required(ErrorMessage = "Debes repetir la contraseña")]
@@ -50,6 +51,7 @@ namespace ElSentidoDelOido.Negocio.DTOs
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
         public string? ConfirmPassword { get; set; }
 
+        [Display(Name = "Seleccionar Rol")]
         public int? RoleId { get; set; }
 
         [Display(Name = "Activo")]
@@ -73,6 +75,6 @@ namespace ElSentidoDelOido.Negocio.DTOs
 
         public int? RoleId { get; set; }
 
-        public bool? Enabled { get; set; }
+        public bool Enabled { get; set; } = true;
     }
 }

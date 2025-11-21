@@ -28,5 +28,35 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             if (entity == null) return null;
             return _mapper.Map<ShiftTypeDTO>(entity);
         }
+
+        public async Task<ShiftTypeDTO> CreateAsync(ShiftTypeCreateDTO dto)
+        {
+            var entity = _mapper.Map<Datos.Entities.ShiftType>(dto);
+            // si quieres alguna regla adicional la agregas aquí
+            var created = await _repository.CreateAsync(entity);
+            return _mapper.Map<ShiftTypeDTO>(created);
+        }
+
+        public async Task<ShiftTypeDTO> UpdateAsync(ShiftTypeUpdateDTO dto)
+        {
+            var existing = await _repository.GetByIdAsync(dto.Id);
+            if (existing == null)
+                throw new KeyNotFoundException($"ShiftType with id {dto.Id} not found.");
+
+            // aplicar cambios
+            _mapper.Map(dto, existing);
+            var updated = await _repository.UpdateAsync(existing);
+            return _mapper.Map<ShiftTypeDTO>(updated);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            await _repository.DeleteAsync(id);
+        }
+
+        public async Task ReactivateAsync(int id)
+        {
+            await _repository.ReactivateAsync(id);
+        }
     }
 }

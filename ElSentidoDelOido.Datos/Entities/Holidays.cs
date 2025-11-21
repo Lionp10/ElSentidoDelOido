@@ -10,9 +10,6 @@ namespace ElSentidoDelOido.Datos.Entities
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
-        public int ShiftTypeId { get; set; }
         public string? Message { get; set; }
-
-        public virtual ShiftType? ShiftType { get; set; }
     }
 }

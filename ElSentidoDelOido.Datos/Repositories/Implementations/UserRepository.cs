@@ -58,5 +58,18 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
             _context.Users.Remove(entity);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+
+            var normalized = email.Trim().ToLowerInvariant();
+
+            return await _context.Users
+                .Include(u => u.Role)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == normalized);
+        }
     }
 }

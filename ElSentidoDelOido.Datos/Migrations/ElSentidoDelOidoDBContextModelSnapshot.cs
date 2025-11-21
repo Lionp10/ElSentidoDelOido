@@ -36,12 +36,7 @@ namespace ElSentidoDelOido.Datos.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ShiftTypeId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ShiftTypeId");
 
                     b.ToTable("Holidays", (string)null);
                 });
@@ -222,17 +217,6 @@ namespace ElSentidoDelOido.Datos.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("ElSentidoDelOido.Datos.Entities.Holidays", b =>
-                {
-                    b.HasOne("ElSentidoDelOido.Datos.Entities.ShiftType", "ShiftType")
-                        .WithMany()
-                        .HasForeignKey("ShiftTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShiftType");
                 });
 
             modelBuilder.Entity("ElSentidoDelOido.Datos.Entities.Shift", b =>

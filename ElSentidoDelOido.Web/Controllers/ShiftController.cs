@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
 using ElSentidoDelOido.Web.Models;
@@ -20,9 +21,12 @@ namespace ElSentidoDelOido.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var tipos = await _shiftTypeService.GetAllAsync();
+
+            var activos = tipos.Where(t => t.Enabled.GetValueOrDefault()).ToList();
+
             var model = new ShiftIndexViewModel
             {
-                TiposTurnos = tipos
+                TiposTurnos = activos
             };
             return View(model);
         }
@@ -37,11 +41,10 @@ namespace ElSentidoDelOido.Web.Controllers
 
             var horarios = await _shiftScheduleService.GetAvailabilityAsync(tipoTurnoId, date.Date);
 
-            // Retornar solo lo necesario para el JS
             var result = horarios.Select(h => new
             {
-                hora = h.Hora,
-                disponible = h.Disponible,
+                hora = h.Hour,
+                disponible = h.Enabled,
                 id = h.Id
             });
 

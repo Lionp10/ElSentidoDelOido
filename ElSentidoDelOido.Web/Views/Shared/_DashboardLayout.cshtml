@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -14,20 +15,18 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="~/images/Esdo.ico" />
+
     <style>
         :root {
             --primary-color: #16255b;
             --primary-dark: #0f1940;
-            --primary-light: #2a3f7f;
-            --accent-color: #00bcd4;
-            --accent-light: #e0f7fa;
             --neutral-light: #f5f5f5;
             --neutral-gray: #e0e0e0;
+            --accent-color: #00bcd4;
             --text-dark: #212121;
             --text-light: #757575;
-            --success: #4caf50;
-            --danger: #f44336;
-            --warning: #ff9800;
         }
 
         * {
@@ -40,7 +39,7 @@
             padding: 0;
         }
 
-        /* Sidebar Styles */
+        /* Sidebar */
         .sidebar {
             position: fixed;
             top: 0;
@@ -49,155 +48,173 @@
             width: 280px;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            overflow: hidden;
+            z-index: 1000; /* base */
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            transition: transform .28s ease, width .28s ease;
+            display: flex;
+            flex-direction: column;
         }
 
             .sidebar.collapsed {
                 transform: translateX(-280px);
             }
 
-        /* Sidebar Logo Section */
+            .sidebar.compact {
+                width: 80px;
+            }
+
+        /* (rest of sidebar styles unchanged) */
         .sidebar-logo {
-            padding: 25px 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 18px 12px;
+            border-bottom: 2px solid rgba(255,255,255,0.12);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
         }
 
-            .sidebar-logo img {
-                height: 40px;
-                width: auto;
-            }
-
-            .sidebar-logo h5 {
-                margin: 0;
-                font-weight: 700;
-                font-size: 18px;
-                white-space: nowrap;
-                flex: 1;
-            }
-
-        .sidebar-toggle {
-            display: none;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-        }
-
-            .sidebar-toggle:hover {
-                background: rgba(255, 255, 255, 0.3);
-            }
-
-        /* Sidebar Navigation */
         .sidebar-nav {
-            padding: 20px 0;
+            padding: 14px 0;
             list-style: none;
             margin: 0;
+            overflow-y: auto;
+            flex: 1 1 auto;
         }
 
-            .sidebar-nav li {
-                margin: 0;
-            }
-
-            .sidebar-nav a {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 14px 20px;
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                transition: all 0.3s ease;
-                font-size: 15px;
-                font-weight: 500;
-                border-left: 3px solid transparent;
-                position: relative;
-            }
-
-                .sidebar-nav a:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                    color: white;
-                    border-left-color: var(--accent-color);
-                }
-
-                .sidebar-nav a.active {
-                    background-color: rgba(0, 188, 212, 0.2);
-                    color: var(--accent-color);
-                    border-left-color: var(--accent-color);
-                }
-
-            .sidebar-nav i {
-                font-size: 18px;
-                width: 24px;
-                text-align: center;
-            }
-
-        /* Sidebar Section Title */
         .sidebar-section {
-            padding: 15px 20px 8px 20px;
-            color: rgba(255, 255, 255, 0.5);
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.7);
             font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 10px;
+            margin-top: 8px;
+            margin-bottom: 6px;
         }
 
-        /* Main Content Area */
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.92);
+            text-decoration: none;
+            transition: all .18s ease;
+            font-size: 15px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+            .sidebar-nav a:hover {
+                background: rgba(255,255,255,0.05);
+                border-left-color: var(--accent-color);
+                color: #fff;
+            }
+
+            .sidebar-nav a.active {
+                background: rgba(0,188,212,0.12);
+                color: var(--accent-color);
+                border-left-color: var(--accent-color);
+            }
+
+        .sidebar-nav i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar.compact .sidebar-logo {
+            justify-content: center;
+        }
+
+            .sidebar.compact .sidebar-logo h5 {
+                display: none;
+            }
+
+        .sidebar.compact .sidebar-section {
+            display: none;
+        }
+
+        .sidebar.compact .sidebar-nav a span {
+            display: none;
+        }
+
+        .sidebar.compact .sidebar-nav a {
+            justify-content: center;
+            padding: 12px 8px;
+        }
+
+        .sidebar.compact .sidebar-logo img {
+            height: 32px;
+        }
+
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            margin-top: auto;
+        }
+
+            .sidebar-footer .nav-logout {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 12px;
+                color: rgba(255,255,255,0.95);
+                background: transparent;
+                border: none;
+                width: 100%;
+                text-align: left;
+            }
+
+                .sidebar-footer .nav-logout i {
+                    font-size: 18px;
+                    width: 24px;
+                    text-align: center;
+                }
+
+        .sidebar.compact .sidebar-footer {
+            padding: 8px 6px;
+        }
+
+            .sidebar.compact .sidebar-footer .nav-logout span {
+                display: none;
+            }
+
+        /* Main content */
         .main-content {
             margin-left: 280px;
-            transition: margin-left 0.3s ease;
-            background-color: var(--neutral-light);
+            transition: transform .28s ease, margin-left .28s ease, padding .28s ease;
             min-height: 100vh;
         }
 
-            .main-content.expanded {
-                margin-left: 0;
+            .main-content.compact {
+                margin-left: 80px;
             }
 
-        /* Top Bar */
+            .main-content.mobile-pushed {
+                transform: translateX(280px);
+            }
+
+        /* Top bar */
         .top-bar {
             background: white;
             padding: 20px 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 50;
+            z-index: 1150; /* SUBE para quedar por encima del notch */
             border-bottom: 1px solid var(--neutral-gray);
         }
 
         .top-bar-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
         }
-
-        .top-bar-toggle {
-            display: none;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background 0.3s ease;
-        }
-
-            .top-bar-toggle:hover {
-                background: var(--primary-dark);
-            }
 
         .top-bar-title h1 {
             margin: 0;
@@ -212,248 +229,242 @@
             color: var(--text-light);
         }
 
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
+        /* Toggle button: pequeño, azul; por defecto dentro del flujo (para mobile). Cuando tenga .edge será fixed */
+        .sidebar-toggle-btn {
+            --btn-size: 36px;
+            width: var(--btn-size);
+            height: var(--btn-size);
             border-radius: 8px;
-            background: var(--neutral-light);
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-            .user-profile:hover {
-                background: var(--neutral-gray);
-            }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            color: white;
-            display: flex;
+            border: none;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
+            background: var(--primary-color);
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(9,30,66,0.20);
+            transition: transform .12s ease, left .12s ease, background .12s ease;
+            z-index: 1250; /* encima de top-bar */
+            font-size: 16px;
+            position: relative; /* flujo por defecto */
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
-        /* Content Area */
-        .content-wrapper {
-            padding: 30px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-            .page-header h2 {
-                font-size: 28px;
-                font-weight: 700;
-                color: var(--primary-color);
-                margin: 0;
+            .sidebar-toggle-btn:focus {
+                outline: 3px solid rgba(0,188,212,0.16);
+                outline-offset: 2px;
             }
 
-            .page-header .btn {
-                padding: 10px 20px;
-                border-radius: 8px;
-                font-weight: 600;
-                transition: all 0.3s ease;
+            /* Cuando JS añada .edge lo convertimos en fixed sobre el borde del sidebar (desktop) */
+            .sidebar-toggle-btn.edge {
+                position: fixed;
+                top: 18px;
+                left: auto; /* JS establecerá left */
+                z-index: 2200; /* siempre en primer plano */
             }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
+        /* Notch: hueco que encaja con el botón (visible en desktop) */
+        .sidebar-notch {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            position: fixed;
+            top: 18px;
+            left: 280px;
+            background: var(--neutral-light);
+            z-index: 1100; /* DEBAJO de top-bar para que no lo tape */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            pointer-events: none;
+            transition: left .12s ease, top .12s ease, opacity .12s ease;
         }
 
-            .btn-primary:hover {
-                background-color: var(--primary-dark);
-                border-color: var(--primary-dark);
+        /* Mobile adjustments */
+        @@media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-280px);
             }
 
-        .btn-secondary {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: white;
-        }
+                .sidebar.show-mobile {
+                    transform: translateX(0);
+                }
 
-            .btn-secondary:hover {
-                background-color: #00acc1;
-                border-color: #00acc1;
+            .main-content, .main-content.compact {
+                margin-left: 0;
+                transform: none;
             }
 
-        /* Responsive - Mobile */
-        @@media (max-width: 768px) {
-            .sidebar
+            .sidebar-toggle-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-right: 8px;
+                z-index: 1250;
+            }
 
-        {
-            width: 250px;
+            .sidebar-notch {
+                display: none;
+            }
         }
 
-        .main-content {
-            margin-left: 0;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(0);
-        }
-
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        .top-bar-toggle {
-            display: block;
-        }
-
-        .sidebar-toggle {
-            display: block;
-        }
-
-        .content-wrapper {
-            padding: 20px 15px;
-        }
-
-        .page-header h2 {
-            font-size: 22px;
-        }
-
-        .top-bar {
-            padding: 15px 20px;
-        }
-
-        .top-bar-title h1 {
-            font-size: 20px;
-        }
-
-        .top-bar-title p {
-            display: none;
-        }
-
-        }
-
-        /* Scrollbar personalizada */
+        /* scrollbar */
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.18);
             border-radius: 3px;
         }
 
             .sidebar::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.3);
+                background: rgba(255,255,255,0.26);
             }
+
+        .sidebar-logo {
+            padding: 18px 12px;
+            border-bottom: 2px solid rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+            .sidebar-logo .logo-inner {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .sidebar-logo img {
+                height: 36px;
+                transition: transform .2s, opacity .2s;
+            }
+
+            .sidebar-logo h5 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 16px;
+                white-space: nowrap;
+            }
+
+        /* User profile (top-right) */
+        .top-bar .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .top-bar .user-profile .user-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: var(--primary-color);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 14px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            }
+
+            .top-bar .user-profile .user-role {
+                display: block;
+                font-size: 13px;
+                color: var(--text-dark);
+                font-weight: 600;
+                line-height: 1;
+            }
+
+                .top-bar .user-profile .user-role small {
+                    display: block;
+                    font-size: 12px;
+                    color: var(--text-light);
+                    font-weight: 500;
+                }
     </style>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar" id="sidebar">
-        <!-- Logo Section -->
+    @{
+        // Obtener claims para iniciales y rol
+        var fullName = User?.FindFirst("FullName")?.Value ?? User?.Identity?.Name ?? string.Empty;
+        string initials;
+        if (!string.IsNullOrWhiteSpace(fullName))
+        {
+            var parts = fullName.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1)
+            {
+                initials = parts[0].Substring(0, 1).ToUpperInvariant();
+            }
+            else
+            {
+                initials = (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpperInvariant();
+            }
+        }
+        else
+        {
+            var email = User?.Identity?.Name ?? string.Empty;
+            initials = !string.IsNullOrWhiteSpace(email) ? email.Substring(0, 1).ToUpperInvariant() : "U";
+        }
+
+        var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(role)) { role = "Usuario"; }
+    }
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" aria-label="Barra lateral de navegación">
         <div class="sidebar-logo">
-            <img src="~/images/ESDOLOGO.png" alt="Logo" />
-            <h5>Admin Panel</h5>
+            <div class="logo-inner">
+                <img src="~/images/LogoOido_BLANCO.webp" alt="Logo" />
+                <h5 class="ms-2">Admin Panel</h5>
+            </div>
         </div>
 
-        <!-- Navigation Items -->
-        <ul class="sidebar-nav">
-            <!-- Main Section -->
+        <ul class="sidebar-nav" id="sidebarNav">
             <li class="sidebar-section">Panel Principal</li>
 
-            <li>
-                <a href="@Url.Action("Index", "Dashboard")" class="nav-link">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            <li><a href="@Url.Action("Index", "Dashboard")" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a></li>
 
-            <!-- Management Section -->
             <li class="sidebar-section">Gestión</li>
 
-            <li>
-                <a href="@Url.Action("Index", "User")" class="nav-link">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Usuarios</span>
-                </a>
-            </li>
+            <li><a href="@Url.Action("Index", "User")" class="nav-link"><i class="bi bi-people-fill"></i><span>Usuarios</span></a></li>
+            <li><a href="@Url.Action("Index", "ShiftType")" class="nav-link"><i class="bi bi-bookmark-check"></i><span>Tipos de Turno</span></a></li>
+            <li><a href="@Url.Action("Main", "Shift")" class="nav-link"><i class="bi bi-calendar2-check"></i><span>Turnos Solicitados</span></a></li>
+            <li><a href="@Url.Action("Index", "ShiftSchedule")" class="nav-link"><i class="bi bi-clock-fill"></i><span>Horarios</span></a></li>
+            <li><a href="@Url.Action("Index", "Professional")" class="nav-link"><i class="bi bi-person-badge-fill"></i><span>Profesionales</span></a></li>
+            <li><a href="@Url.Action("Index", "Holidays")" class="nav-link"><i class="bi bi-calendar2-x"></i><span>Anular días</span></a></li>
 
-            <li>
-                <a href="@Url.Action("Index", "TipoTurno")" class="nav-link">
-                    <i class="bi bi-bookmark-check"></i>
-                    <span>Tipos de Turno</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="@Url.Action("Index", "Turno")" class="nav-link">
-                    <i class="bi bi-calendar2-check"></i>
-                    <span>Turnos Solicitados</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="@Url.Action("Index", "Horario")" class="nav-link">
-                    <i class="bi bi-clock-fill"></i>
-                    <span>Horarios</span>
-                </a>
-            </li>
-
-            <!-- Configuration Section -->
             <li class="sidebar-section">Configuración</li>
 
-            <li>
-                <a href="@Url.Action("Index", "Configuracion")" class="nav-link">
-                    <i class="bi bi-gear-fill"></i>
-                    <span>Configuración</span>
-                </a>
-            </li>
+            <li><a href="@Url.Action("Index", "Report")" class="nav-link"><i class="bi bi-file-earmark-pdf"></i><span>Reportes</span></a></li>
+        </ul>
 
-            <li>
-                <a href="@Url.Action("Index", "Reportes")" class="nav-link">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    <span>Reportes</span>
-                </a>
-            </li>
-
-            <!-- Session Section -->
-            <li class="sidebar-section" style="margin-top: auto; padding-top: 20px; border-top: 2px solid rgba(255, 255, 255, 0.15);">Sesión</li>
-
-            <li>
-                <a href="@Url.Action("LogOut", "Auth")" class="nav-link">
+        <div class="sidebar-footer">
+            <form method="post" action="@Url.Action("Logout", "Auth")" class="m-0">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nav-logout" title="Cerrar sesión">
                     <i class="bi bi-box-arrow-left"></i>
                     <span>Cerrar Sesión</span>
-                </a>
-            </li>
-        </ul>
+                </button>
+            </form>
+        </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Notch (desktop) -->
+    <div id="sidebarNotch" class="sidebar-notch" aria-hidden="true"></div>
+
+    <!-- Main -->
     <div class="main-content" id="mainContent">
-        <!-- Top Bar -->
         <div class="top-bar">
             <div class="top-bar-left">
-                <button class="top-bar-toggle" id="topBarToggle">
-                    <i class="bi bi-list"></i>
+                <!-- botón dentro del flujo: en mobile aparecerá antes del título; en desktop JS añadirá .edge para fijarlo -->
+                <button id="sidebarToggle" class="sidebar-toggle-btn" aria-expanded="false" aria-controls="sidebar" title="Plegar / Desplegar">
+                    <i class="bi bi-list" id="sidebarToggleIcon" aria-hidden="true"></i>
                 </button>
+
                 <div class="top-bar-title">
                     <h1>@ViewData["Title"]</h1>
                     <p>Bienvenido al panel de administración</p>
@@ -461,18 +472,18 @@
             </div>
 
             <div class="top-bar-right">
-                <div class="user-profile">
-                    <div class="user-avatar">AD</div>
-                    <span style="color: var(--text-dark); font-weight: 600;">Admin</span>
+                <div class="user-profile" title="@fullName">
+                    <div class="user-avatar">@initials</div>
+                    <div class="user-role">
+                        @fullName
+                        <small>@role</small>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Content Area -->
         <div class="content-wrapper">
             @RenderBody()
-
-            @RenderSection("Scripts", required: false)
         </div>
     </div>
 
@@ -480,33 +491,150 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <script>
-        $(document).ready(function () {
-            const sidebar = $('#sidebar');
-            const mainContent = $('#mainContent');
-            const topBarToggle = $('#topBarToggle');
+    @RenderSection("Scripts", required: false)
 
-            // Toggle sidebar on button click
-            topBarToggle.click(function () {
-                sidebar.toggleClass('collapsed');
-                mainContent.toggleClass('expanded');
+    <script>
+        $(function () {
+            var $sidebar = $('#sidebar');
+            var $main = $('#mainContent');
+            var $btn = $('#sidebarToggle');
+            var $icon = $('#sidebarToggleIcon');
+            var $notch = $('#sidebarNotch');
+
+            function isMobile() { return window.innerWidth <= 991; }
+
+            function setEdgePosition() {
+                if (isMobile()) {
+                    // mobile: button stays inline before title; hide notch and remove edge
+                    $btn.removeClass('edge').css({ left: '', top: '', position: '' });
+                    $notch.hide();
+                    return;
+                }
+
+                // desktop: make button fixed and place notch under it
+                var sidebarRect = $sidebar[0].getBoundingClientRect();
+                var btnWidth = $btn.outerWidth() || 36;
+                var left = Math.round(Math.max(8, sidebarRect.right - (btnWidth / 2)));
+
+                $btn.addClass('edge').css({ position: 'fixed', left: left + 'px', top: '18px' });
+                $notch.css({ left: left + 'px', top: '18px', display: 'block' });
+            }
+
+            // Recalculate position after sidebar transition
+            $sidebar.on('transitionend webkitTransitionEnd', function () {
+                setEdgePosition();
             });
 
-            // Set active navigation item based on current URL
-            const currentUrl = window.location.href;
-            $('.sidebar-nav a').each(function () {
-                if (this.href === currentUrl || currentUrl.includes(this.href)) {
-                    $(this).addClass('active');
+            // Restore persisted desktop compact state
+            var persisted = localStorage.getItem('esdo_sidebar_compact') === 'true';
+            if (!isMobile() && persisted) {
+                $sidebar.addClass('compact');
+                $main.addClass('compact');
+            }
+
+            function updateIcon() {
+                if (isMobile()) {
+                    if ($sidebar.hasClass('show-mobile')) {
+                        $icon.prop('className', 'bi bi-x-lg');
+                        $btn.attr('aria-expanded', 'true');
+                    } else {
+                        $icon.prop('className', 'bi bi-list');
+                        $btn.attr('aria-expanded', 'false');
+                    }
+                } else {
+                    if ($sidebar.hasClass('compact')) {
+                        $icon.prop('className', 'bi bi-chevron-right');
+                        $btn.attr('aria-expanded', 'false');
+                    } else {
+                        $icon.prop('className', 'bi bi-chevron-left');
+                        $btn.attr('aria-expanded', 'true');
+                    }
+                }
+            }
+
+            // Adjust main content push for mobile (use actual sidebar width)
+            function pushMainForMobile(open) {
+                if (!isMobile()) {
+                    $main.css('transform', '');
+                    $main.removeClass('mobile-pushed');
+                    return;
+                }
+                if (open) {
+                    var width = $sidebar.outerWidth() || 280;
+                    $main.css({ transform: 'translateX(' + width + 'px)', transition: 'transform .28s ease' }).addClass('mobile-pushed');
+                    // optional: prevent background scroll while open
+                    $('body').css('overflow', 'hidden');
+                } else {
+                    $main.css({ transform: '', transition: 'transform .28s ease' }).removeClass('mobile-pushed');
+                    $('body').css('overflow', '');
+                }
+            }
+
+            // initial
+            updateIcon();
+            setEdgePosition();
+
+            // Toggle
+            $btn.on('click', function (e) {
+                e.stopPropagation();
+
+                if (isMobile()) {
+                    // off-canvas mobile: toggle and push main to the right
+                    $sidebar.toggleClass('show-mobile');
+                    var open = $sidebar.hasClass('show-mobile');
+                    $btn.attr('aria-expanded', open ? 'true' : 'false');
+                    updateIcon();
+                    pushMainForMobile(open);
+                } else {
+                    // desktop: compact vs full
+                    $sidebar.toggleClass('compact');
+                    $main.toggleClass('compact');
+                    var compact = $sidebar.hasClass('compact');
+                    localStorage.setItem('esdo_sidebar_compact', compact ? 'true' : 'false');
+
+                    updateIcon();
+                    // reposition fixed button after width change
+                    setTimeout(setEdgePosition, 10);
                 }
             });
 
-            // Cerrar sidebar en móvil cuando se hace clic en un enlace
-            if ($(window).width() <= 768) {
-                $('.sidebar-nav a').click(function () {
-                    sidebar.addClass('collapsed');
-                    mainContent.removeClass('expanded');
-                });
-            }
+            // close mobile when clicking nav link
+            $sidebar.on('click', '.sidebar-nav a', function () {
+                if (isMobile()) {
+                    $sidebar.removeClass('show-mobile');
+                    $btn.attr('aria-expanded', 'false');
+                    updateIcon();
+                    pushMainForMobile(false);
+                }
+            });
+
+            // reposition on resize
+            $(window).on('resize', function () {
+                if (!isMobile()) {
+                    $sidebar.removeClass('show-mobile');
+                    $('body').css('overflow', '');
+                    pushMainForMobile(false);
+                }
+                setEdgePosition();
+                updateIcon();
+            });
+
+            // click outside to close off-canvas mobile
+            $(document).on('click touchstart', function (e) {
+                if (isMobile() && $sidebar.hasClass('show-mobile')) {
+                    var $t = $(e.target);
+                    if (!$t.closest('#sidebar').length && !$t.closest('#sidebarToggle').length) {
+                        $sidebar.removeClass('show-mobile');
+                        $btn.attr('aria-expanded', 'false');
+                        updateIcon();
+                        pushMainForMobile(false);
+                    }
+                }
+            });
+
+            // ensure initial visibility
+            setEdgePosition();
+            updateIcon();
         });
     </script>
 </body>

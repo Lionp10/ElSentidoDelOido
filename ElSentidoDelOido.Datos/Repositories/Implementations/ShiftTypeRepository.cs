@@ -27,5 +27,37 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
+
+        public async Task<ShiftType> CreateAsync(ShiftType entity)
+        {
+            _context.ShiftTypes.Add(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        public async Task<ShiftType> UpdateAsync(ShiftType entity)
+        {
+            _context.ShiftTypes.Update(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _context.ShiftTypes.FirstOrDefaultAsync(s => s.Id == id);
+            if (entity == null) return;
+            entity.Enabled = false;
+            _context.ShiftTypes.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ReactivateAsync(int id)
+        {
+            var entity = await _context.ShiftTypes.FirstOrDefaultAsync(s => s.Id == id);
+            if (entity == null) return;
+            entity.Enabled = true;
+            _context.ShiftTypes.Update(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }

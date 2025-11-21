@@ -31,17 +31,73 @@ namespace ElSentidoDelOido.Negocio.Helpers
 
             // ShiftType mappings
             CreateMap<ShiftType, ShiftTypeDTO>()
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Name));
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
 
-            // (Si necesitas mapear DTO -> Entity en el futuro)
+            // DTO -> Entity (para crear/editar)
             CreateMap<ShiftTypeDTO, ShiftType>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
 
-            // ShiftSchedule -> ShiftScheduleDTO (Disponible se calcula en servicio)
+            CreateMap<ShiftTypeCreateDTO, ShiftType>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Enabled, opt => opt.MapFrom(src => src.Enabled));
+
+            CreateMap<ShiftTypeUpdateDTO, ShiftType>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Enabled, opt => opt.MapFrom(src => src.Enabled))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
+            // ShiftSchedule -> ShiftScheduleDTO (ya existía)
             CreateMap<ShiftSchedule, ShiftScheduleDTO>()
-                .ForMember(dest => dest.Hora, opt => opt.MapFrom(src => src.Hour))
-                .ForMember(dest => dest.Disponible, opt => opt.MapFrom(src => true)); // por defecto true
+                .ForMember(dest => dest.Hour, opt => opt.MapFrom(src => src.Hour))
+                .ForMember(dest => dest.Enabled, opt => opt.MapFrom(src => true));
+
+            CreateMap<ShiftScheduleCreateDTO, ShiftSchedule>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Hour, opt => opt.MapFrom(src => src.Hour))
+                .ForMember(dest => dest.ShiftTypeId, opt => opt.MapFrom(src => src.ShiftTypeId));
+
+            CreateMap<ShiftScheduleUpdateDTO, ShiftSchedule>()
+                .ForMember(dest => dest.Hour, opt => opt.MapFrom(src => src.Hour))
+                .ForMember(dest => dest.ShiftTypeId, opt => opt.MapFrom(src => src.ShiftTypeId))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
+            // Professional mappings
+            CreateMap<Professional, ProfessionalDTO>();
+
+            CreateMap<ProfessionalCreateDTO, Professional>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Enabled, opt => opt.MapFrom(src => src.Enabled))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+
+            CreateMap<ProfessionalUpdateDTO, Professional>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Enabled, opt => opt.MapFrom(src => src.Enabled));
+
+            // Holidays mappings
+            CreateMap<Holidays, HolidaysDTO>()
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
+
+            CreateMap<HolidaysCreateDTO, Holidays>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
+
+            CreateMap<HolidaysUpdateDTO, Holidays>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
         }
     }
 }

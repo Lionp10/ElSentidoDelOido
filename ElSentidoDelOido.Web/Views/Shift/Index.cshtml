@@ -417,7 +417,7 @@
                         {
                             <label class="turno-card">
                                 <input type="radio" name="TipoTurnoId" value="@tipo.Id" class="turno-selector" />
-                                <span class="turno-card-text">@tipo.Nombre</span>
+                                <span class="turno-card-text">@tipo.Name</span>
                             </label>
                         }
                     </div>
@@ -443,7 +443,7 @@
                             <i class="bi bi-clock"></i> Horarios disponibles
                         </label>
                         <div class="horarios-grid" id="horariosContainer">
-                            <p style="color: #999; font-size: 14px;">Selecciona una fecha y tipo de turno para ver horarios disponibles</p>
+                            <p style="color: #999; font-size: 14px;">Selecciona una fecha para ver horarios disponibles</p>
                         </div>
                         <span id="errorHora" class="error-message"></span>
                     </div>
@@ -558,7 +558,7 @@
             const fecha = $('#fecha').val();
 
             if (!tipoTurnoId || !fecha) {
-                $('#horariosContainer').html('<p style="color: #999; font-size: 14px;">Selecciona una fecha y tipo de turno</p>');
+                $('#horariosContainer').html('<p style="color: #999; font-size: 14px;">Selecciona una fecha para ver horarios disponibles</p>');
                 return;
             }
 

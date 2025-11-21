@@ -11,10 +11,6 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ESDO.WebApplication.styles.css" asp-append-version="true" />
-
     <!-- Favicon -->
     <link rel="icon" type="image/jpg" href="~/images/Esdo.ico" />
 
@@ -394,6 +390,51 @@
                 margin: 0.5rem 0;
             }
         }
+
+        /* Estilo visual para que el botón hamburguesa destaque */
+        .navbar-toggler {
+            background: var(--color-primary);
+            border: 2px solid rgba(0,0,0,0.08);
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+            /* opcional: eleva ligeramente para que no quede pegado al borde */
+            margin-left: 8px;
+        }
+
+            /* Icono (Bootstrap Icons) en blanco para alto contraste */
+            .navbar-toggler .bi {
+                color: #fff;
+                font-size: 1.25rem;
+                line-height: 1;
+            }
+
+            /* Hover / focus accesible */
+            .navbar-toggler:hover,
+            .navbar-toggler:focus {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 18px rgba(22,37,91,0.15);
+                outline: none;
+            }
+
+        .navbar-toggler {
+            background: transparent;
+            border: 2px solid var(--color-primary);
+        }
+        .navbar-toggler .bi { color: var(--color-primary); }
+        
+
+        @@media (min-width: 992px) {
+            .navbar-toggler
+
+        {
+            display: none;
+        }
+
+        }
     </style>
 </head>
 
@@ -405,7 +446,7 @@
                 <div class="col-md-6">
                     <div class="d-flex flex-wrap">
                         <div class="d-flex align-items-center">
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#contactoModal">
+                            <a href='@Url.Action("Index", "Home")#Contacto'>
                                 <i class="bi bi-envelope"></i> Contáctanos
                             </a>
                         </div>
@@ -416,20 +457,6 @@
                             </a>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <a href="@Url.Action("Main", "Shift")">
-                            <i class="bi bi-box-arrow-in-right"></i> Ir al sistema
-                        </a>
-                    }
-                    else
-                    {
-                        <a href="@Url.Action("Index", "Auth")">
-                            <i class="bi bi-box-arrow-in-right"></i> Ingresar al sistema
-                        </a>
-                    }
                 </div>
             </div>
         </div>
@@ -442,26 +469,26 @@
                 <img src="~/images/LogoOido.webp" alt="Logo El Sentido del Oído" style="height: 50px;">
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegación">
+                <i class="bi bi-list"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#Inicio">Inicio</a>
+                        <a class="nav-link active" href='@Url.Action("Index", "Home")#Inicio'>Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Nosotros">Nosotros</a>
+                        <a class="nav-link" href='@Url.Action("Index", "Home")#Nosotros'>Nosotros</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Servicios">Servicios</a>
+                        <a class="nav-link" href='@Url.Action("Index", "Home")#Servicios'>Servicios</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="https://iarargentina.com.ar/web/index.php" target="_blank">Audífonos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Contacto">Contacto</a>
+                        <a class="nav-link" href='@Url.Action("Index", "Home")#Contacto'>Contacto</a>
                     </li>
                 </ul>
                 <div class="ms-3">
@@ -491,11 +518,12 @@
                 <div class="col-md-3">
                     <div class="footer-section">
                         <div class="footer-title">Servicios</div>
-                        <a href="#Servicios" class="footer-link">Audiometría</a>
-                        <a href="#Servicios" class="footer-link">Otoemisiones Acústicas</a>
-                        <a href="#Servicios" class="footer-link">Audífonos</a>
-                        <a href="#Servicios" class="footer-link">Rehabilitación Auditiva</a>
+                        <a href='@Url.Action("Index", "Home")#Servicios' class="footer-link">Audiometría</a>
+                        <a href='@Url.Action("Index", "Home")#Servicios' class="footer-link">Otoemisiones Acústicas</a>
+                        <a href='@Url.Action("Index", "Home")#Servicios' class="footer-link">Audífonos</a>
+                        <a href='@Url.Action("Index", "Home")#Servicios' class="footer-link">Rehabilitación Auditiva</a>
                     </div>
+
                 </div>
                 <div class="col-md-3">
                     <div class="footer-section">
@@ -578,6 +606,78 @@
                     link.classList.remove('active');
                     if (link.getAttribute('href').substring(1) === current) {
                         link.classList.add('active');
+                    }
+                });
+            });
+        });
+
+            $(function () {
+            // Maneja enlaces que contienen '#'
+            $('a[href*="#"]').on('click', function (e) {
+                var href = $(this).attr('href') || '';
+                var targetAttr = $(this).attr('target');
+                if (targetAttr === '_blank') return; // respetar enlaces externos
+
+                var hashIndex = href.indexOf('#');
+                if (hashIndex === -1) return;
+
+                var fragment = href.substring(hashIndex + 1);
+                if (!fragment) return;
+
+                // Crear <a> para parsear la url del enlace
+                var temp = document.createElement('a');
+                temp.href = href;
+
+                // path + search de la url del enlace
+                var linkPath = temp.pathname.replace(/\/$/, '') + (temp.search || '');
+                // path + search actual
+                var currentPath = window.location.pathname.replace(/\/$/, '') + (window.location.search || '');
+
+                // Si el enlace no tiene path (href="#...") o apunta a la misma ruta actual -> hacer smooth scroll
+                var isSamePage = (!linkPath || linkPath === currentPath || linkPath === '' && currentPath === '');
+
+                // Además considerar que el Home puede estar en '/' o en '/Home'/'/Home/Index'
+                var normalizedLinkIsHome = linkPath === '' || /\/(home(\/index)?)?$/i.test(linkPath);
+                var normalizedCurrentIsHome = /\/(home(\/index)?)?$/i.test(window.location.pathname);
+
+                if (isSamePage || (normalizedLinkIsHome && normalizedCurrentIsHome)) {
+                    // ya en página destino: smooth scroll si existe el elemento
+                    var $targetEl = $('#' + fragment);
+                    if ($targetEl.length) {
+                        e.preventDefault();
+                        $('html, body').animate({ scrollTop: $targetEl.offset().top }, 500);
+
+                        // cerrar navbar collapse si está abierto (Bootstrap)
+                        var $collapse = $('.navbar-collapse');
+                        if ($collapse.hasClass('show')) {
+                            $('.navbar-toggler').click();
+                        }
+                    }
+                    // si no existe el elemento, dejar comportamiento por defecto (no hacer nada)
+                    return;
+                }
+
+                // Si llegamos aquí, el enlace apunta a otra ruta (por ejemplo Home#Servicios) y no estamos en Home:
+                // dejar que el navegador navegue normalmente (se cargará Home y el fragment hará el scroll).
+                // No hacer preventDefault.
+            });
+
+            // Actualizar active nav cuando se haga scroll (mantener lógica existente)
+            var sections = $('section[id], div[id]');
+            $(window).on('scroll', function () {
+                var current = '';
+                sections.each(function () {
+                    var top = $(this).offset().top;
+                    if ($(window).scrollTop() >= top - 200) {
+                        current = $(this).attr('id');
+                    }
+                });
+                $('.nav-link').removeClass('active');
+                $('.nav-link').each(function () {
+                    var href = $(this).attr('href') || '';
+                    var idx = href.indexOf('#');
+                    if (idx !== -1 && href.substring(idx + 1) === current) {
+                        $(this).addClass('active');
                     }
                 });
             });

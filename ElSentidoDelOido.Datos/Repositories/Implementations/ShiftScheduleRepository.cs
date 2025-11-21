@@ -14,10 +14,12 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
             _context = context;
         }
 
+        // Incluir ShiftType para que el servicio pueda obtener el nombre del tipo
         public async Task<IEnumerable<ShiftSchedule>> GetByShiftTypeAsync(int shiftTypeId)
         {
             return await _context.ShiftSchedules
                 .Where(s => s.ShiftTypeId == shiftTypeId)
+                .Include(s => s.ShiftType)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -31,6 +33,55 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
                             && s.Date.Value.Date == dateOnly)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ShiftSchedule>> GetAllAsync()
+        {
+            return await _context.ShiftSchedules
+                .Include(s => s.ShiftType)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<ShiftSchedule?> GetByIdAsync(int id)
+        {
+            return await _context.ShiftSchedules
+                .Include(s => s.ShiftType)
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<ShiftSchedule> CreateAsync(ShiftSchedule entity)
+        {
+            _context.ShiftSchedules.Add(entity);
+            await _context.SaveChangesAsync();
+            // recargar con ShiftType incluido
+            return await GetByIdAsync(entity.Id) ?? entity;
+        }
+
+        public async Task<ShiftSchedule> UpdateAsync(ShiftSchedule entity)
+        {
+            _context.ShiftSchedules.Update(entity);
+            await _context.SaveChangesAsync();
+            return await GetByIdAsync(entity.Id) ?? entity;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _context.ShiftSchedules.FindAsync(id);
+            if (entity == null) return;
+            _context.ShiftSchedules.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistsByHourAndTypeAsync(string hour, int shiftTypeId, int? excludeId = null)
+        {
+            var query = _context.ShiftSchedules
+                .Where(s => s.ShiftTypeId == shiftTypeId && s.Hour == hour);
+
+            if (excludeId.HasValue)
+                query = query.Where(s => s.Id != excludeId.Value);
+
+            return await query.AsNoTracking().AnyAsync();
         }
     }
 }

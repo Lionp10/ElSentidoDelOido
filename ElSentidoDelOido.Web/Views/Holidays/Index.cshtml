@@ -1,0 +1,216 @@
+﻿@model IEnumerable<ElSentidoDelOido.Negocio.DTOs.HolidaysDTO>
+
+@{
+    ViewData["Title"] = "Gestión de Feriados";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16255b;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .card-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .table-header-custom {
+        background: linear-gradient(to right, #f8f9fa, #f3f4f6);
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+        .table-header-custom th {
+            color: #16255b;
+            font-weight: 600;
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+
+    .btn-icon-edit {
+        background-color: #dbeafe;
+        color: #0369a1;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .btn-icon-delete {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .btn-group-sm {
+        gap: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="header-icon">
+                    <i class="bi bi-calendar-day-fill"></i>
+                </div>
+                <div>
+                    <h1 class="page-title mb-0">Gestión de Feriados</h1>
+                    <p class="text-muted small mt-1">Listado de feriados por tipo de turno</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Create", "Holidays")" class="btn btn-primary-custom btn-lg">
+                <i class="bi bi-plus-lg"></i> Nuevo Feriado
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card card-custom">
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr class="table-header-custom">
+                                <th style="width: 30%;">Fecha</th>
+                                <th style="width: 50%;">Mensaje</th>
+                                <th style="width: 20%; text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Date.ToString("yyyy-MM-dd")
+                                    </td>
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(item.Message) ? "-" : item.Message)
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="actions-group" role="group">
+                                            <a href="@Url.Action("Edit", "Holidays", new { id = item.Id })"
+                                               class="btn btn-icon-edit btn-sm" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <button type="button"
+                                                    class="btn btn-icon-delete btn-confirm-delete"
+                                                    data-id="@item.Id"
+                                                    data-name="@(item.Date.ToString("yyyy-MM-dd"))"
+                                                    title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="py-5 text-center">
+                    <i class="bi bi-inbox" style="font-size:3.5rem;color:#16255b;opacity:0.3"></i>
+                    <h5 class="mt-3 mb-2">No hay feriados registrados</h5>
+                    <p class="text-muted mb-4">Crea un nuevo feriado para administrar días no laborables</p>
+                    <a href="@Url.Action("Create", "Holidays")" class="btn btn-primary-custom">
+                        <i class="bi bi-plus-lg text-light"></i> Crear Feriado
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal fade modal-confirm" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-circle"></i> Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">¿Seguro que deseas eliminar este feriado?</p>
+
+                @using (Html.BeginForm("Delete", "Holidays", FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteHolidayId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modalEl = document.getElementById('confirmDeleteModal');
+            if (!modalEl) return;
+
+            const modal = new bootstrap.Modal(modalEl);
+            const messageEl = document.getElementById('deleteMessage');
+            const idInput = document.getElementById('deleteHolidayId');
+            const deleteForm = document.getElementById('deleteForm');
+
+            document.querySelectorAll('.btn-confirm-delete').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name') || 'el feriado';
+                    idInput.value = id;
+                    messageEl.textContent = `¿Confirmas eliminar el feriado ${name.trim()}? Esta acción no se puede deshacer.`;
+                    modal.show();
+                });
+            });
+        })();
+    </script>
+}

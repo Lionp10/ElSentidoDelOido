@@ -1,16 +1,31 @@
 using ElSentidoDelOido.Datos.DataContext;
-using Microsoft.EntityFrameworkCore;
-using ElSentidoDelOido.Datos.Repositories.Interfaces;
 using ElSentidoDelOido.Datos.Repositories.Implementations;
-using ElSentidoDelOido.Negocio.Services.Interfaces;
-using ElSentidoDelOido.Negocio.Services.Implementations;
+using ElSentidoDelOido.Datos.Repositories.Interfaces;
 using ElSentidoDelOido.Negocio.Helpers;
+using ElSentidoDelOido.Negocio.Services.Implementations;
+using ElSentidoDelOido.Negocio.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext
 builder.Services.AddDbContext<ElSentidoDelOidoDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Index";
+        options.LogoutPath = "/Auth/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+        options.Cookie.Name = "EsdoAuth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+    });
+
+builder.Services.AddAuthorization();
 
 // Repositorios y servicios
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -21,6 +36,16 @@ builder.Services.AddScoped<IShiftTypeService, ShiftTypeService>();
 
 builder.Services.AddScoped<IShiftScheduleRepository, ShiftScheduleRepository>();
 builder.Services.AddScoped<IShiftScheduleService, ShiftScheduleService>();
+
+builder.Services.AddScoped<IProfessionalRepository, ProfessionalRepository>();
+builder.Services.AddScoped<IProfessionalService, ProfessionalService>();
+
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+
+builder.Services.AddScoped<IHolidaysRepository, HolidaysRepository>();
+builder.Services.AddScoped<IHolidaysService, HolidaysService>();
+
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));

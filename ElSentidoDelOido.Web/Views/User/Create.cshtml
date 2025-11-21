@@ -280,9 +280,12 @@
 
                             <div class="mb-3">
                                 @Html.LabelFor(m => m.RoleId, new { @class = "form-label" })
-                                @Html.TextBoxFor(m => m.RoleId, new { @class = "form-control form-control-custom", placeholder = "RoleId (opcional)" })
+                                @Html.DropDownListFor(m => m.RoleId,
+                                (IEnumerable<SelectListItem>)ViewBag.Roles,
+                                                        "Selecciona un rol",
+                                                        new { @class = "form-control form-control-custom" })
                                 @Html.ValidationMessageFor(m => m.RoleId, "", new { @class = "text-danger small" })
-                            </div>
+                        </div>
 
                             <div class="form-check mb-3">
                                 @Html.CheckBoxFor(m => m.Enabled, new { @class = "form-check-input", id = "Enabled" })
@@ -319,13 +322,14 @@
                         <li><strong>Apellido</strong></li>
                         <li><strong>Email</strong> (debe ser válido)</li>
                         <li><strong>Contraseña</strong></li>
+                        <li><strong>Rol</strong></li>
                     </ul>
                     <hr class="my-3">
                     <h6 class="card-title">
                         <i class="bi bi-lightbulb"></i> Sugerencias
                     </h6>
                     <p class="card-text small text-muted">
-                        Asegúrate de ingresar un email y teléfono válidos para que el usuario pueda recibir confirmaciones y notificaciones de sus turnos.
+                        Asegúrate de ingresar un email válido, seleccioanr un rol y marcar en el campo activo.
                     </p>
                 </div>
             </div>
@@ -337,4 +341,5 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/password-validation.js"></script>
 }

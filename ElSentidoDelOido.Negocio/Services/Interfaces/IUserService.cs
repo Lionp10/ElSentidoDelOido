@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ElSentidoDelOido.Negocio.DTOs;
+using System.Collections.Generic;
 
 namespace ElSentidoDelOido.Negocio.Services.Interfaces
 {
@@ -11,5 +11,6 @@ namespace ElSentidoDelOido.Negocio.Services.Interfaces
         Task<UserDTO> CreateAsync(UserCreateDTO dto);
         Task<UserDTO> UpdateAsync(UserUpdateDTO dto);
         Task DeleteAsync(int id);
+        Task<UserDTO?> AuthenticateAsync(string email, string password);
     }
 }

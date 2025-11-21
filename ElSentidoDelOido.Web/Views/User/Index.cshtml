@@ -119,6 +119,17 @@
         font-weight: 600;
     }
 
+    /* Badge para mostrar rol */
+    .badge-role {
+        background: linear-gradient(90deg, #e6f0ff 0%, #dbe9ff 100%);
+        color: #0f172a;
+        padding: 0.35rem 0.6rem;
+        border-radius: 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
     .btn-icon-edit {
         background-color: #dbeafe;
         color: #0369a1;
@@ -147,6 +158,19 @@
             color: white;
         }
 
+    .btn-icon-activate {
+        background-color: #10B981; /* verde suave */
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+    }
+
+        .btn-icon-activate:hover {
+            background-color: #059669;
+            color: white;
+        }
+
     .btn-group-sm {
         gap: 0.5rem;
     }
@@ -167,6 +191,32 @@
             color: #16255b;
             font-weight: 600;
         }
+
+    /* Modal custom (estilo parecido al sistema) */
+    .modal-confirm .modal-header {
+        border-bottom: none;
+        background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03));
+    }
+
+    .modal-confirm .modal-title {
+        color: #16255b;
+        font-weight: 700;
+    }
+
+    .modal-confirm .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-confirm .btn-danger {
+        background-color: #dc2626;
+        border-color: #dc2626;
+    }
+
+    .modal-confirm .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+        color: white;
+    }
 </style>
 
 <div class="container-fluid py-5">
@@ -208,10 +258,11 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr class="table-header-custom">
-                                <th style="width: 30%;">Nombre Completo</th>
-                                <th style="width: 25%;">Email</th>
-                                <th style="width: 18%;">Teléfono</th>
-                                <th style="width: 12%;">Estado</th>
+                                <th style="width: 28%;">Nombre Completo</th>
+                                <th style="width: 22%;">Email</th>
+                                <th style="width: 12%;">Rol</th>
+                                <th style="width: 13%;">Creación</th>
+                                <th style="width: 10%;">Estado</th>
                                 <th style="width: 15%; text-align: center;">Acciones</th>
                             </tr>
                         </thead>
@@ -230,8 +281,14 @@
                                     <td>
                                         <span class="email-text">@usuario.Email</span>
                                     </td>
+
+                                    <!-- Columna Rol añadida -->
                                     <td>
-                                        <span class="phone-text">-</span> @* No hay Phone en UserDTO; muestra '-' o añade la propiedad si la tienes *@
+                                        <span class="badge-role">@((usuario.RoleName ?? "-"))</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="phone-text">@usuario.DateOfCreation.ToString()</span>
                                     </td>
                                     <td>
                                         @if (usuario.Enabled == true)
@@ -249,10 +306,31 @@
                                                class="btn btn-icon-edit" title="Editar">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="@Url.Action("Delete", new { id = usuario.Id })"
-                                               class="btn btn-icon-delete" title="Eliminar">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+
+                                            @if (usuario.Enabled == true)
+                                            {
+                                                <!-- mostrar botón de baja -->
+                                                <button type="button"
+                                                        class="btn btn-icon-delete btn-confirm-action"
+                                                        data-id="@usuario.Id"
+                                                        data-name="@( (usuario.FirstName ?? "") + " " + (usuario.LastName ?? "") )"
+                                                        data-action="deactivate"
+                                                        title="Dar de baja">
+                                                    <i class="bi bi-person-x"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <!-- mostrar botón de alta -->
+                                                <button type="button"
+                                                        class="btn btn-icon-activate btn-confirm-action"
+                                                        data-id="@usuario.Id"
+                                                        data-name="@( (usuario.FirstName ?? "") + " " + (usuario.LastName ?? "") )"
+                                                        data-action="activate"
+                                                        title="Dar de alta">
+                                                    <i class="bi bi-person-plus"></i>
+                                                </button>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -269,7 +347,7 @@
                         <h5 class="mt-3 mb-2">No hay usuarios registrados</h5>
                         <p class="text-muted mb-4">Comienza creando un nuevo usuario para gestionar el sistema</p>
                         <a href="@Url.Action("Create")" class="btn btn-primary-custom">
-                            <i class="bi bi-plus-lg"></i> Crear Primer Usuario
+                            <i class="bi bi-plus-lg text-light"></i> Crear Primer Usuario
                         </a>
                     </div>
                 </div>
@@ -277,3 +355,73 @@
         </div>
     </div>
 </div>
+
+<!-- Confirm Action Modal (activar / desactivar) -->
+<div class="modal fade modal-confirm" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-circle"></i> Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="actionMessage">¿Seguro que deseas continuar?</p>
+
+                @using (Html.BeginForm("", "User", FormMethod.Post, new { id = "actionForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="actionUserId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="actionConfirmBtn" class="btn btn-danger">Confirmar</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modalEl = document.getElementById('confirmActionModal');
+            if (!modalEl) return;
+
+            const modal = new bootstrap.Modal(modalEl);
+            const messageEl = document.getElementById('actionMessage');
+            const userIdInput = document.getElementById('actionUserId');
+            const actionForm = document.getElementById('actionForm');
+            const confirmBtn = document.getElementById('actionConfirmBtn');
+
+            // Rutas de acciones
+            const activateUrl = '@Url.Action("Activate", "User")';
+            const deactivateUrl = '@Url.Action("Deactivate", "User")';
+
+            document.querySelectorAll('.btn-confirm-action').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name') || 'el usuario';
+                    const action = this.getAttribute('data-action');
+
+                    userIdInput.value = id;
+
+                    if (action === 'activate') {
+                        messageEl.textContent = `¿Confirmas dar de alta a ${name.trim()}? Esta acción volverá a activar la cuenta.`;
+                        actionForm.action = activateUrl;
+                        confirmBtn.classList.remove('btn-danger');
+                        confirmBtn.classList.add('btn-success');
+                        confirmBtn.textContent = 'Confirmar alta';
+                    } else {
+                        messageEl.textContent = `¿Confirmas dar de baja a ${name.trim()}? Esta acción desactivará la cuenta.`;
+                        actionForm.action = deactivateUrl;
+                        confirmBtn.classList.remove('btn-success');
+                        confirmBtn.classList.add('btn-danger');
+                        confirmBtn.textContent = 'Confirmar baja';
+                    }
+
+                    modal.show();
+                });
+            });
+        })();
+    </script>
+}
