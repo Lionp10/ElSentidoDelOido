@@ -1,0 +1,190 @@
+﻿@{
+    ViewData["Title"] = "Turno Solicitado";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .confirmation-container {
+        background: linear-gradient(135deg, rgba(22, 37, 91, 0.05) 0%, rgba(255, 184, 28, 0.03) 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .confirmation-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(22, 37, 91, 0.15);
+        padding: 40px;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10B981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2.5rem;
+        animation: success-bounce 0.6s ease;
+    }
+
+    @@keyframes success-bounce {
+        0% { transform: scale(0.8); opacity: 0; }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .confirmation-title {
+        color: #16255b;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .confirmation-message {
+        color: #4b5563;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+
+    .turno-id {
+        background: rgba(22, 37, 91, 0.1);
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #16255b;
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(22, 37, 91, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        color: white;
+        text-decoration: none;
+    }
+
+    .info-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 30px 0;
+        text-align: left;
+    }
+
+    .info-section h6 {
+        color: #16255b;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .info-section ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #4b5563;
+    }
+
+    .info-section ul li {
+        margin-bottom: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        .confirmation-card {
+            padding: 30px 20px;
+            margin: 20px;
+        }
+        
+        .confirmation-title {
+            font-size: 1.5rem;
+        }
+        
+        .btn-home, .btn-secondary {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            margin-right: 0;
+        }
+    }
+</style>
+
+<div class="confirmation-container">
+    <div class="container">
+        <div class="confirmation-card">
+            <div class="success-icon">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            
+            <h1 class="confirmation-title">¡Turno Solicitado Exitosamente!</h1>
+            
+            <p class="confirmation-message">
+                @ViewBag.Mensaje
+            </p>
+            
+            @if (ViewBag.TurnoId != null)
+            {
+                <div class="turno-id">
+                    <strong>Número de referencia:</strong> #@ViewBag.TurnoId
+                </div>
+            }
+
+            <div class="info-section">
+                <h6><i class="bi bi-info-circle"></i> Información importante:</h6>
+                <ul>
+                    <li><strong>Confirmación:</strong> Recibirás un email o mensaje para confirmar tu turno</li>
+                    <li><strong>Cambios:</strong> Si necesitas reprogramar, contacta con anticipación</li>
+                    <li><strong>Puntualidad:</strong> Llega 15 minutos antes de tu horario</li>
+                </ul>
+            </div>
+            
+            <div class="mt-4">
+                <a href="@Url.Action("Index", "Home")" class="btn-home">
+                    <i class="bi bi-house"></i> Volver al Inicio
+                </a>
+                <a href="@Url.Action("Index", "Shift")" class="btn-secondary">
+                    <i class="bi bi-plus-circle"></i> Solicitar Otro Turno
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

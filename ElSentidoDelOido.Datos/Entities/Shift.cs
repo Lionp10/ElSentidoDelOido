@@ -27,7 +27,7 @@ namespace ElSentidoDelOido.Datos.Entities
 
         public int? ShiftTypeId { get; set; }
 
-        public int? ShiftStateId { get; set; }
+        public string? ShiftStateId { get; set; }
 
         public int? ProfessionalId { get; set; }
 
@@ -35,7 +35,23 @@ namespace ElSentidoDelOido.Datos.Entities
 
         public virtual ShiftSchedule? Schedule { get; set; }
 
-        public virtual ShiftStateEnum? ShiftState { get; set; }
+        public virtual ShiftStateEnum? ShiftState 
+        { 
+            get 
+            {
+                if (string.IsNullOrEmpty(ShiftStateId))
+                    return null;
+                
+                if (Enum.TryParse<ShiftStateEnum>(ShiftStateId, out var result))
+                    return result;
+                
+                return null;
+            }
+            set
+            {
+                ShiftStateId = value?.ToString();
+            }
+        }
 
         public virtual ShiftType? ShiftType { get; set; }
     }

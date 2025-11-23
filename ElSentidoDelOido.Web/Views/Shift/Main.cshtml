@@ -1,0 +1,749 @@
+﻿@model ElSentidoDelOido.Web.Models.ShiftMainViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Gestión de Turnos";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    /* Estilos coherentes con el resto del sistema */
+    .page-title { font-size: 2rem; font-weight: 700; color: #16255b; }
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.3);
+        }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+        color: white;
+    }
+
+    .card-custom { border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+    .table-header-custom { background: linear-gradient(to right, #f8f9fa, #f3f4f6); border-bottom: 2px solid #e5e7eb; }
+    .table-header-custom th { color: #16255b; font-weight: 600; padding: 0.8rem; text-transform: uppercase; font-size: 0.875rem; }
+
+    .btn-icon-edit { background-color: #dbeafe; color: #0369a1; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    .btn-icon-delete { background-color: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    .btn-icon-approve { background-color: #d1fae5; color: #065f46; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    .btn-icon-reject { background-color: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    .btn-icon-cancel { background-color: #fef3c7; color: #92400e; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    .btn-icon-complete { background-color: #dbeafe; color: #1e40af; border: none; border-radius: 6px; padding: 0.5rem 0.75rem; }
+    
+    .btn-icon-edit:hover { background-color: #0ea5e9; color: white; }
+    .btn-icon-delete:hover { background-color: #dc2626; color: white; }
+    .btn-icon-approve:hover { background-color: #059669; color: white; }
+    .btn-icon-reject:hover { background-color: #dc2626; color: white; }
+    .btn-icon-cancel:hover { background-color: #f59e0b; color: white; }
+    .btn-icon-complete:hover { background-color: #3b82f6; color: white; }
+
+    .empty-state { background: linear-gradient(135deg, rgba(22, 37, 91, 0.05), rgba(30, 58, 138, 0.05)); border-radius: 12px; margin: 2rem 1rem; }
+    .empty-state i { font-size: 3.5rem; color: #16255b; opacity: 0.3; }
+    .empty-state h5 { color: #16255b; font-weight: 600; }
+
+    .btn-group-sm { gap: 0.5rem; display: inline-flex; align-items: center; }
+
+    /* Badges actualizados según especificaciones */
+    .badge-status {
+        padding: 0.35rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .badge-pendiente { background-color: #fef3c7; color: #92400e; border: 1px solid #f59e0b; } /* Warning */
+    .badge-confirmado { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; } /* Success */
+    .badge-rechazado { background-color: #fee2e2; color: #991b1b; border: 1px solid #ef4444; } /* Danger */
+    .badge-cancelado { background-color: #fee2e2; color: #991b1b; border: 1px solid #ef4444; } /* Danger */
+    .badge-culminado { background-color: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; } /* Primary */
+
+    .avatar-small {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .patient-info { font-size: 0.9rem; }
+    .patient-name { font-weight: 600; color: #374151; }
+    .patient-contact { color: #6b7280; font-size: 0.85rem; }
+
+    /* Modal styles */
+    .modal-confirm .modal-header { border-bottom: none; background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03)); }
+    .modal-confirm .modal-title { color: #16255b; font-weight: 700; }
+    .modal-confirm .modal-body { padding: 1.5rem; }
+    .modal-confirm .btn-danger { background-color: #dc2626; border-color: #dc2626; }
+    .modal-confirm .btn-success { background-color: #059669; border-color: #059669; }
+    .modal-confirm .btn-secondary { background-color: #6b7280; border-color: #6b7280; color: white; }
+
+    @@media (max-width: 992px) {
+        .filter-panel { border-right: none; margin-bottom: 1rem; }
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="header-icon">
+                    <i class="bi bi-calendar2-check"></i>
+                </div>
+                <div>
+                    <h1 class="page-title mb-0">Gestión de Turnos</h1>
+                    <p class="text-muted small mt-1">Administra y gestiona todos los turnos solicitados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Index")" class="btn btn-primary-custom btn-lg">
+                <i class="bi bi-plus-lg"></i> Crear Turno
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card card-custom">
+        <div class="card-body">
+            <div class="row">
+                <!-- Filters -->
+                <div class="col-lg-3 filter-panel">
+                    <h6 class="mb-3">Filtros</h6>
+                    <form id="filterForm" method="get" asp-action="Main">
+                        <div class="mb-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" value="@Model.FechaFiltro?.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" class="form-select">
+                                <option value="">Todos los estados</option>
+                                @foreach (var estado in Model.EstadosDisponibles)
+                                {
+                                    if (Model.EstadoFiltro == estado.Key)
+                                    {
+                                        <option value="@estado.Key" selected="selected">@estado.Value</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@estado.Key">@estado.Value</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Turno</label>
+                            <select name="tipoTurnoId" class="form-select">
+                                <option value="">Todos los tipos</option>
+                                @foreach (var tipo in Model.ShiftTypes)
+                                {
+                                    if (Model.TipoTurnoFiltro == tipo.Id)
+                                    {
+                                        <option value="@tipo.Id" selected="selected">@tipo.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@tipo.Id">@tipo.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Profesional</label>
+                            <select name="professionalId" class="form-select">
+                                <option value="">Todos los profesionales</option>
+                                @foreach (var prof in Model.Professionals)
+                                {
+                                    var professionalName = $"{prof.FirstName} {prof.LastName}".Trim();
+                                    if (Model.ProfessionalFiltro == prof.Id)
+                                    {
+                                        <option value="@prof.Id" selected="selected">@professionalName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@prof.Id">@professionalName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom btn-sm">Aplicar</button>
+                            <a href="@Url.Action("Main")" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+                        </div>
+                    </form>
+
+                    <hr class="my-3">
+
+                    <div class="mt-3">
+                        <h6 class="mb-2">Acciones Rápidas</h6>
+                        <a href="@Url.Action("Index")" class="btn btn-primary-custom w-100 mb-2">
+                            <i class="bi bi-plus-lg"></i> Crear Turno
+                        </a>
+                        <a href="@Url.Action("Index", "ShiftType")" class="btn btn-outline-secondary w-100 mb-2">
+                            Tipos de Turno
+                        </a>
+                        <a href="@Url.Action("Index", "Professional")" class="btn btn-outline-secondary w-100">
+                            Profesionales
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="col-lg-9">
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr class="table-header-custom">
+                                        <th style="width: 20%;">Paciente</th>
+                                        <th style="width: 15%;">Fecha y Hora</th>
+                                        <th style="width: 15%;">Tipo</th>
+                                        <th style="width: 12%;">Estado</th>
+                                        <th style="width: 15%;">Profesional</th>
+                                        <th style="width: 18%;">Mensaje</th>
+                                        <th style="width: 5%; text-align:center;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-small">
+                                                        @(item.FirstName?.Substring(0, 1).ToUpper() ?? "?")
+                                                    </div>
+                                                    <div class="patient-info">
+                                                        <div class="patient-name">@item.FirstName @item.LastName</div>
+                                                        <div class="patient-contact">
+                                                            @item.Email<br />
+                                                            @item.Phone
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div>
+                                                    <strong>@item.Date?.ToString("dd/MM/yyyy")</strong><br />
+                                                    <small class="text-muted">@item.ScheduleHour</small>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                <span class="fw-500">@item.ShiftTypeName</span>
+                                            </td>
+                                            <td class="align-middle">
+                                                @{
+                                                    var estadoClase = item.ShiftStateId?.ToLower() switch
+                                                    {
+                                                        "pendiente" => "badge-pendiente",
+                                                        "confirmado" => "badge-confirmado",
+                                                        "rechazado" => "badge-rechazado",
+                                                        "cancelado" => "badge-cancelado",
+                                                        "culminado" => "badge-culminado",
+                                                        _ => "badge-pendiente"
+                                                    };
+                                                }
+                                                <span class="badge-status @estadoClase">@item.ShiftStateId</span>
+                                            </td>
+                                            <td class="align-middle">
+                                                @if (string.IsNullOrEmpty(item.ProfessionalName))
+                                                {
+                                                    <span class="text-muted font-italic">Sin asignar</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@item.ProfessionalName</span>
+                                                }
+                                            </td>
+                                            <td class="align-middle">
+                                                @if (!string.IsNullOrEmpty(item.Message))
+                                                {
+                                                    <span class="text-truncate d-block" style="max-width: 150px;" title="@item.Message">
+                                                        @item.Message
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                @{
+
+                                                    // Calcular fecha/hora completa y permiso de edición.
+                                                    DateTime? turnoDateTime = null;
+                                                    if (item.Date.HasValue && !string.IsNullOrEmpty(item.ScheduleHour))
+                                                    {
+                                                        // Intentar parsear con formato estricto "hh:mm" y fallback a TryParse general.
+                                                        if (TimeSpan.TryParseExact(item.ScheduleHour, @"hh\:mm", CultureInfo.InvariantCulture, out var st)
+                                                            || TimeSpan.TryParse(item.ScheduleHour, out st))
+                                                        {
+                                                            turnoDateTime = item.Date.Value.Date.Add(st);
+                                                        }
+                                                    }
+
+                                                    // Regla actualizada:
+                                                    // Mostrar Edit únicamente cuando el estado != "Culminado" Y la fecha+hora del turno es FUTURA.
+                                                    // (si no hay fecha/hora, se permite la edición solo si no está culminado)
+                                                    var isCulminado = string.Equals(item.ShiftStateId, "Culminado", StringComparison.OrdinalIgnoreCase);
+                                                    var isFutureAppointment = turnoDateTime.HasValue && turnoDateTime.Value > DateTime.Now;
+                                                    var canEdit = !isCulminado && ( !turnoDateTime.HasValue || isFutureAppointment );
+                                                }
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    @* Pendiente *@
+                                                    @if (string.Equals(item.ShiftStateId, "Pendiente", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        <button type="button"
+                                                                class="btn btn-icon-approve btn-approve-trigger"
+                                                                data-id="@item.Id"
+                                                                data-patient="@item.FirstName @item.LastName"
+                                                                title="Aprobar">
+                                                            <i class="bi bi-check-lg"></i>
+                                                        </button>
+                                                        <button type="button"
+                                                                class="btn btn-icon-reject btn-reject-trigger"
+                                                                data-id="@item.Id"
+                                                                data-patient="@item.FirstName @item.LastName"
+                                                                title="Rechazar">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+
+                                                        @* Mostrar Edit solo si cumple condiciones *@
+                                                        @if (canEdit)
+                                                        {
+                                                            <a href="@Url.Action("Edit", new { id = item.Id })" 
+                                                               class="btn btn-icon-edit" title="Editar">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </a>
+                                                        }
+                                                    }
+                                                    @* Confirmado *@
+                                                    else if (string.Equals(item.ShiftStateId, "Confirmado", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        if (isFutureAppointment)
+                                                        {
+                                                            <button type="button"
+                                                                    class="btn btn-icon-cancel btn-cancel-trigger"
+                                                                    data-id="@item.Id"
+                                                                    data-patient="@item.FirstName @item.LastName"
+                                                                    data-datetime="@item.Date?.ToString("dd/MM/yyyy") @item.ScheduleHour"
+                                                                    title="Cancelar Turno">
+                                                                <i class="bi bi-calendar-x"></i>
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button"
+                                                                    class="btn btn-icon-complete btn-complete-trigger"
+                                                                    data-id="@item.Id"
+                                                                    data-patient="@item.FirstName @item.LastName"
+                                                                    data-datetime="@item.Date?.ToString("dd/MM/yyyy") @item.ScheduleHour"
+                                                                    title="Marcar como Culminado">
+                                                                <i class="bi bi-check2-circle"></i>
+                                                            </button>
+                                                        }
+
+                                                        @* Edit solo si cumple condiciones *@
+                                                        @if (canEdit)
+                                                        {
+                                                            <a href="@Url.Action("Edit", new { id = item.Id })" 
+                                                               class="btn btn-icon-edit" title="Editar">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </a>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Otros estados: mostrar Edit solo si cumple condiciones *@
+                                                        @if (canEdit)
+                                                        {
+                                                            <a href="@Url.Action("Edit", new { id = item.Id })" 
+                                                               class="btn btn-icon-edit" title="Editar">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </a>
+                                                        }
+                                                    }
+
+                                                    <!-- Botón eliminar siempre disponible -->
+                                                    <button type="button"
+                                                            class="btn btn-icon-delete btn-delete-trigger"
+                                                            data-id="@item.Id"
+                                                            data-patient="@item.FirstName @item.LastName"
+                                                            title="Eliminar">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div class="mt-3 d-flex justify-content-between align-items-center">
+                                <div class="text-muted">
+                                    Mostrando página @Model.CurrentPage de @Model.TotalPages 
+                                    (@Model.TotalCount turnos en total)
+                                </div>
+                                <nav>
+                                    <ul class="pagination mb-0">
+                                        @if (Model.CurrentPage > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Main", new { 
+                                                    fecha = Model.FechaFiltro?.ToString("yyyy-MM-dd"), 
+                                                    estado = Model.EstadoFiltro, 
+                                                    tipoTurnoId = Model.TipoTurnoFiltro, 
+                                                    professionalId = Model.ProfessionalFiltro, 
+                                                    page = Model.CurrentPage - 1 
+                                                })">Anterior</a>
+                                            </li>
+                                        }
+
+                                        @for (int i = 1; i <= Model.TotalPages; i++)
+                                        {
+                                            var css = i == Model.CurrentPage ? "page-item active" : "page-item";
+                                            <li class="@css">
+                                                <a class="page-link" href="@Url.Action("Main", new { 
+                                                    fecha = Model.FechaFiltro?.ToString("yyyy-MM-dd"), 
+                                                    estado = Model.EstadoFiltro, 
+                                                    tipoTurnoId = Model.TipoTurnoFiltro, 
+                                                    professionalId = Model.ProfessionalFiltro, 
+                                                    page = i 
+                                                })">@i</a>
+                                            </li>
+                                        }
+
+                                        @if (Model.CurrentPage < Model.TotalPages)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Main", new { 
+                                                    fecha = Model.FechaFiltro?.ToString("yyyy-MM-dd"), 
+                                                    estado = Model.EstadoFiltro, 
+                                                    tipoTurnoId = Model.TipoTurnoFiltro, 
+                                                    professionalId = Model.ProfessionalFiltro, 
+                                                    page = Model.CurrentPage + 1 
+                                                })">Siguiente</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state py-5 text-center">
+                            <i class="bi bi-calendar-x"></i>
+                            <h5 class="mt-3 mb-2">No hay turnos registrados</h5>
+                            <p class="text-muted mb-3">No se encontraron turnos con los filtros aplicados.</p>
+                            <a href="@Url.Action("Main")" class="btn btn-outline-secondary me-2">Limpiar Filtros</a>
+                            <a href="@Url.Action("Index")" class="btn btn-primary-custom">Solicitar Turno</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Aprobar Turno -->
+<div class="modal fade modal-confirm" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Aprobar Turno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="approveMessage">¿Confirmas aprobar este turno?</p>
+                
+                <div class="mb-3">
+                    <label for="professionalSelect" class="form-label">Asignar Profesional:</label>
+                    <select id="professionalSelect" class="form-select">
+                        <option value="">Selecciona un profesional</option>
+                        @foreach (var prof in Model.Professionals)
+                        {
+                            <option value="@prof.Id">@prof.FirstName @prof.LastName</option>
+                        }
+                    </select>
+                </div>
+                
+                @using (Html.BeginForm("Approve", "Shift", FormMethod.Post, new { id = "approveForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="approveShiftId" value="" />
+                    <input type="hidden" name="professionalId" id="approveProfessionalId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="approveConfirmBtn" class="btn btn-success">Aprobar Turno</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Rechazar Turno -->
+<div class="modal fade modal-confirm" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Rechazar Turno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="rejectMessage">¿Confirmas rechazar este turno?</p>
+                <p class="text-muted small">Esta acción cambiará el estado del turno a "Rechazado" y no se puede deshacer.</p>
+                
+                @using (Html.BeginForm("Reject", "Shift", FormMethod.Post, new { id = "rejectForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="rejectShiftId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="rejectConfirmBtn" class="btn btn-danger">Rechazar Turno</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Eliminar Turno -->
+<div class="modal fade modal-confirm" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-circle"></i> Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">¿Seguro que deseas eliminar este turno?</p>
+                
+                @using (Html.BeginForm("Delete", "Shift", FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteItemId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar Turno Confirmado -->
+<div class="modal fade modal-confirm" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-calendar-x"></i> Cancelar Turno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="cancelMessage">¿Confirmas cancelar este turno confirmado?</p>
+                <p class="text-muted small">Esta acción cambiará el estado del turno a "Cancelado".</p>
+                
+                @using (Html.BeginForm("Cancel", "Shift", FormMethod.Post, new { id = "cancelForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="cancelShiftId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                        <button type="submit" id="cancelConfirmBtn" class="btn btn-warning">Cancelar Turno</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Culminar Turno -->
+<div class="modal fade modal-confirm" id="completeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-check2-circle"></i> Culminar Turno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="completeMessage">¿Confirmas marcar este turno como culminado?</p>
+                <p class="text-muted small">Esta acción indica que la cita se realizó exitosamente.</p>
+                
+                @using (Html.BeginForm("Complete", "Shift", FormMethod.Post, new { id = "completeForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="completeShiftId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                        <button type="submit" id="completeConfirmBtn" class="btn btn-primary">Marcar Culminado</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Modal Aprobar
+            const approveModalEl = document.getElementById('approveModal');
+            const approveModal = approveModalEl ? new bootstrap.Modal(approveModalEl) : null;
+            const approveMsg = document.getElementById('approveMessage');
+            const approveIdInput = document.getElementById('approveShiftId');
+            const approveProfIdInput = document.getElementById('approveProfessionalId');
+            const professionalSelect = document.getElementById('professionalSelect');
+            const approveBtn = document.getElementById('approveConfirmBtn');
+
+            // Modal Rechazar
+            const rejectModalEl = document.getElementById('rejectModal');
+            const rejectModal = rejectModalEl ? new bootstrap.Modal(rejectModalEl) : null;
+            const rejectMsg = document.getElementById('rejectMessage');
+            const rejectIdInput = document.getElementById('rejectShiftId');
+
+            // Modal Eliminar
+            const deleteModalEl = document.getElementById('confirmDeleteModal');
+            const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
+            const deleteMsg = document.getElementById('deleteMessage');
+            const deleteIdInput = document.getElementById('deleteItemId');
+
+            // Modal Cancelar
+            const cancelModalEl = document.getElementById('cancelModal');
+            const cancelModal = cancelModalEl ? new bootstrap.Modal(cancelModalEl) : null;
+            const cancelMsg = document.getElementById('cancelMessage');
+            const cancelIdInput = document.getElementById('cancelShiftId');
+
+            // Modal Culminar  
+            const completeModalEl = document.getElementById('completeModal');
+            const completeModal = completeModalEl ? new bootstrap.Modal(completeModalEl) : null;
+            const completeMsg = document.getElementById('completeMessage');
+            const completeIdInput = document.getElementById('completeShiftId');
+
+            // Eventos Aprobar
+            document.querySelectorAll('.btn-approve-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    
+                    if (!approveIdInput) return;
+                    approveIdInput.value = id;
+                    approveMsg.textContent = `¿Confirmas aprobar el turno de ${patient}? Debes asignar un profesional.`;
+                    if (professionalSelect) professionalSelect.value = '';
+                    if (approveProfIdInput) approveProfIdInput.value = '';
+                    if (approveBtn) approveBtn.disabled = true;
+                    
+                    if (approveModal) approveModal.show();
+                });
+            });
+
+            if (professionalSelect) {
+                professionalSelect.addEventListener('change', function() {
+                    if (approveProfIdInput) approveProfIdInput.value = this.value;
+                    if (approveBtn) approveBtn.disabled = !this.value;
+                });
+            }
+
+            // Eventos Rechazar
+            document.querySelectorAll('.btn-reject-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    
+                    if (!rejectIdInput) return;
+                    rejectIdInput.value = id;
+                    rejectMsg.textContent = `¿Confirmas rechazar el turno de ${patient}?`;
+                    if (rejectModal) rejectModal.show();
+                });
+            });
+
+            // Eventos Eliminar
+            document.querySelectorAll('.btn-delete-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    
+                    if (!deleteIdInput) return;
+                    deleteIdInput.value = id;
+                    deleteMsg.textContent = `¿Confirmas eliminar el turno de ${patient}? Esta acción no se puede deshacer.`;
+                    if (deleteModal) deleteModal.show();
+                });
+            });
+
+            // Eventos Cancelar Turno Confirmado
+            document.querySelectorAll('.btn-cancel-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    const datetime = this.getAttribute('data-datetime');
+                    
+                    if (!cancelIdInput) return;
+                    cancelIdInput.value = id;
+                    cancelMsg.textContent = `¿Confirmas cancelar el turno de ${patient} programado para ${datetime}?`;
+                    if (cancelModal) cancelModal.show();
+                });
+            });
+
+            // Eventos Culminar
+            document.querySelectorAll('.btn-complete-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    const datetime = this.getAttribute('data-datetime');
+                    
+                    if (!completeIdInput) return;
+                    completeIdInput.value = id;
+                    completeMsg.textContent = `¿Confirmas que se realizó exitosamente el turno de ${patient} del ${datetime}?`;
+                    if (completeModal) completeModal.show();
+                });
+            });
+        })();
+    </script>
+}

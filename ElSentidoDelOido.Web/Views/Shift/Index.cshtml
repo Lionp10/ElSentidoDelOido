@@ -6,9 +6,6 @@
 }
 
 <style>
-    /* Estilos para el formulario de turnos */
-
-    /* Variables de color */
     :root {
         --color-primary: #16255b;
         --color-secondary: #02205C;
@@ -16,6 +13,7 @@
         --color-light-bg: #F5F7FA;
         --color-success: #10B981;
         --color-error: #EF4444;
+        --color-warning: #F59E0B;
     }
 
     .shift-container {
@@ -120,18 +118,14 @@
         }
 
     @@keyframes fadeIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Inputs personalizados */
@@ -190,6 +184,29 @@
     .calendar-input {
         accent-color: var(--color-primary);
     }
+
+    /* Mensaje de día no disponible */
+    .fecha-no-disponible {
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        border: 1px solid #F59E0B;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .fecha-no-disponible i {
+            color: var(--color-warning);
+            font-size: 18px;
+        }
+
+        .fecha-no-disponible .mensaje {
+            color: #92400E;
+            font-weight: 500;
+            font-size: 14px;
+        }
 
     /* Selección de horarios */
     .horarios-grid {
@@ -340,46 +357,43 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .stepper
-
-    {
-        padding: 20px;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .stepper-item {
-        flex-basis: 100%;
-    }
-
-        .stepper-item:not(:last-child)::after {
-            display: none;
+        .stepper {
+            padding: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-    .step-content {
-        padding: 20px;
-    }
+        .stepper-item {
+            flex-basis: 100%;
+        }
 
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
+            .stepper-item:not(:last-child)::after {
+                display: none;
+            }
 
-    .horarios-grid {
-        grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-    }
+        .step-content {
+            padding: 20px;
+        }
 
-    .button-group {
-        flex-direction: column;
-    }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
 
-    .btn-shift {
-        width: 100%;
-    }
+        .horarios-grid {
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+        }
 
-    .stepper-label {
-        display: none;
-    }
+        .button-group {
+            flex-direction: column;
+        }
 
+        .btn-shift {
+            width: 100%;
+        }
+
+        .stepper-label {
+            display: none;
+        }
     }
 </style>
 
@@ -404,7 +418,11 @@
             </div>
 
             <!-- Formulario -->
-            <form id="formularioTurno" method="POST" action="@Url.Action("GuardarTurno", "Shift")">
+            <form id="formularioTurno" method="POST" action="@Url.Action("SaveTurn", "Shift")">
+                @Html.AntiForgeryToken()
+    
+                <!-- Campo hidden para el tipo de turno -->
+                <input type="hidden" id="tipoTurnoIdHidden" name="TipoTurnoId" value="" />
 
                 <!-- Paso 1: Tipo de Turno -->
                 <div class="step-content active" data-step="1">
@@ -416,7 +434,7 @@
                         @foreach (var tipo in Model.TiposTurnos)
                         {
                             <label class="turno-card">
-                                <input type="radio" name="TipoTurnoId" value="@tipo.Id" class="turno-selector" />
+                                <input type="radio" name="TipoTurnoRadio" value="@tipo.Id" class="turno-selector" />
                                 <span class="turno-card-text">@tipo.Name</span>
                             </label>
                         }
@@ -433,8 +451,16 @@
                     <div class="form-grid">
                         <div class="input-group-shift">
                             <label for="fecha">Fecha</label>
-                            <input type="date" id="fecha" name="Fecha" class="form-control-shift calendar-input" required />
+                            <input type="date" id="fecha" name="Date" class="form-control-shift calendar-input" required />
                             <span id="errorFecha" class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje para días no disponibles -->
+                    <div id="fechaNoDisponible" class="fecha-no-disponible" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <div class="mensaje" id="mensajeFechaNoDisponible">
+                            Selecciona otra fecha, no hay turnos disponibles para el día seleccionado.
                         </div>
                     </div>
 
@@ -447,7 +473,7 @@
                         </div>
                         <span id="errorHora" class="error-message"></span>
                     </div>
-                    <input type="hidden" id="horaSeleccionada" name="Hora" />
+                    <input type="hidden" id="horaSeleccionada" name="Hour" />
                 </div>
 
                 <!-- Paso 3: Datos Personales -->
@@ -475,13 +501,13 @@
                     <div class="form-grid">
                         <div class="input-group-shift">
                             <label for="nombre">Nombre</label>
-                            <input type="text" id="nombre" name="Nombre" class="form-control-shift" placeholder="Tu nombre" required />
+                            <input type="text" id="nombre" name="FirstName" class="form-control-shift" placeholder="Tu nombre" required />
                             <span id="errorNombre" class="error-message"></span>
                         </div>
 
                         <div class="input-group-shift">
                             <label for="apellido">Apellido</label>
-                            <input type="text" id="apellido" name="Apellido" class="form-control-shift" placeholder="Tu apellido" required />
+                            <input type="text" id="apellido" name="LastName" class="form-control-shift" placeholder="Tu apellido" required />
                             <span id="errorApellido" class="error-message"></span>
                         </div>
 
@@ -493,13 +519,13 @@
 
                         <div class="input-group-shift">
                             <label for="telefono">Teléfono</label>
-                            <input type="tel" id="telefono" name="Telefono" class="form-control-shift" placeholder="+54 3464 123456" required />
+                            <input type="tel" id="telefono" name="Phone" class="form-control-shift" placeholder="+54 3464 123456" required />
                             <span id="errorTelefono" class="error-message"></span>
                         </div>
 
                         <div class="input-group-shift full">
                             <label for="mensaje">Mensaje (Opcional)</label>
-                            <textarea id="mensaje" name="Mensaje" class="form-control-shift" placeholder="Comparte cualquier información adicional..." rows="4"></textarea>
+                            <textarea id="mensaje" name="Message" class="form-control-shift" placeholder="Comparte cualquier información adicional..." rows="4"></textarea>
                         </div>
                     </div>
                 </div>
@@ -528,6 +554,7 @@
         let pasoActual = 1;
         const totalPasos = 3;
         const formulario = $('#formularioTurno');
+        let feriadosDelMes = [];
 
         // Actualizar stepper
         function actualizarStepper() {
@@ -552,9 +579,68 @@
             $('#btnEnviar').toggle(pasoActual === totalPasos);
         }
 
+        // Función para deshabilitar fines de semana y feriados en el input date
+        function deshabilitarFechasNoDisponibles() {
+            const fechaInput = document.getElementById('fecha');
+            if (!fechaInput) return;
+
+            fechaInput.addEventListener('input', function(e) {
+                const fechaSeleccionada = new Date(e.target.value + 'T00:00:00');
+                const diaSemana = fechaSeleccionada.getDay();
+
+                if (diaSemana === 0 || diaSemana === 6) {
+                    mostrarMensajeFechaNoDisponible('Los consultorios permanecen cerrados los fines de semana.');
+                    e.target.value = '';
+                    return;
+                }
+
+                const dia = fechaSeleccionada.getDate();
+                if (feriadosDelMes.includes(dia)) {
+                    mostrarMensajeFechaNoDisponible('No hay horarios disponibles para este día.');
+                    e.target.value = '';
+                    return;
+                }
+
+                ocultarMensajeFechaNoDisponible();
+            });
+        }
+
+        // Mostrar mensaje de fecha no disponible
+        function mostrarMensajeFechaNoDisponible(mensaje) {
+            $('#mensajeFechaNoDisponible').text(mensaje);
+            $('#fechaNoDisponible').slideDown(300);
+            $('#horariosContainer').html('<p style="color: #999; font-size: 14px;">Selecciona una fecha válida para ver horarios disponibles</p>');
+            $('#horaSeleccionada').val('');
+        }
+
+        // Ocultar mensaje de fecha no disponible
+        function ocultarMensajeFechaNoDisponible() {
+            $('#fechaNoDisponible').slideUp(300);
+        }
+
+        // Cargar feriados del mes cuando se cambie la fecha
+        async function cargarFeriadosDelMes(fecha) {
+            const date = new Date(fecha);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            try {
+                const response = await $.ajax({
+                    url: '@Url.Action("ObtenerFeriadosDelMes", "Shift")',
+                    type: 'GET',
+                    data: { year: year, month: month }
+                });
+                feriadosDelMes = response || [];
+            } catch (error) {
+                console.error('Error al cargar feriados:', error);
+                feriadosDelMes = [];
+            }
+        }
+
         // Cargar horarios disponibles
         function cargarHorarios() {
-            const tipoTurnoId = $('input[name="TipoTurnoId"]:checked').val();
+            // CORREGIR: usar el input hidden en lugar del radio button
+            const tipoTurnoId = $('#tipoTurnoIdHidden').val();
             const fecha = $('#fecha').val();
 
             if (!tipoTurnoId || !fecha) {
@@ -567,18 +653,39 @@
                 type: 'GET',
                 data: { tipoTurnoId: tipoTurnoId, fecha: fecha },
                 success: function (data) {
+                    if (data.esFinDeSemana || data.esFeriado) {
+                        mostrarMensajeFechaNoDisponible(data.mensaje);
+                        return;
+                    }
+
+                    ocultarMensajeFechaNoDisponible();
+                    
                     let html = '';
-                    data.forEach(function (horario) {
-                        const disabled = !horario.disponible ? 'disabled' : '';
-                        html += `<button type="button" class="horario-btn" data-hora="${horario.hora}" ${disabled}>${horario.hora}</button>`;
-                    });
+                    
+                    if (Array.isArray(data)) {
+                        if (data.length === 0) {
+                            html = '<p style="color: #999; font-size: 14px;">No hay horarios disponibles para este día</p>';
+                        } else {
+                            data.forEach(function (horario) {
+                                const disabled = !horario.disponible ? 'disabled' : '';
+                                html += `<button type="button" class="horario-btn" data-hora="${horario.hora}" ${disabled}>${horario.hora}</button>`;
+                            });
+                        }
+                    } else {
+                        html = '<p style="color: #999; font-size: 14px;">No hay horarios disponibles para este día</p>';
+                        console.warn('Respuesta inesperada del servidor:', data);
+                    }
+                    
                     $('#horariosContainer').html(html);
 
-                    // Restaurar selección anterior si existe
                     const horaSeleccionada = $('#horaSeleccionada').val();
                     if (horaSeleccionada) {
                         $(`.horario-btn[data-hora="${horaSeleccionada}"]`).addClass('selected');
                     }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error en AJAX:', error);
+                    mostrarMensajeFechaNoDisponible('Error al cargar los horarios. Intenta nuevamente.');
                 }
             });
         }
@@ -588,7 +695,8 @@
             let esValido = true;
 
             if (pasoActual === 1) {
-                if (!$('input[name="TipoTurnoId"]:checked').val()) {
+                // CORREGIR: validar el campo hidden
+                if (!$('#tipoTurnoIdHidden').val()) {
                     $('#errorTipo').text('Debes seleccionar un tipo de turno');
                     esValido = false;
                 } else {
@@ -612,18 +720,26 @@
                 if (!$('#nombre').val()) {
                     $('#errorNombre').text('El nombre es requerido');
                     esValido = false;
+                } else {
+                    $('#errorNombre').text('');
                 }
                 if (!$('#apellido').val()) {
                     $('#errorApellido').text('El apellido es requerido');
                     esValido = false;
+                } else {
+                    $('#errorApellido').text('');
                 }
                 if (!$('#email').val()) {
                     $('#errorEmail').text('El email es requerido');
                     esValido = false;
+                } else {
+                    $('#errorEmail').text('');
                 }
                 if (!$('#telefono').val()) {
                     $('#errorTelefono').text('El teléfono es requerido');
                     esValido = false;
+                } else {
+                    $('#errorTelefono').text('');
                 }
             }
 
@@ -632,22 +748,39 @@
 
         // Actualizar resumen
         function actualizarResumen() {
-            const tipoTurnoId = $('input[name="TipoTurnoId"]:checked').val();
-            const tipoTurnoNombre = $(`input[value="${tipoTurnoId}"]`).siblings('.turno-card-text').text() || '-';
+            // CORREGIR: usar el campo hidden
+            const tipoTurnoId = $('#tipoTurnoIdHidden').val();
+            const tipoTurnoNombre = $(`input[name="TipoTurnoRadio"][value="${tipoTurnoId}"]`).siblings('.turno-card-text').text() || '-';
 
             $('#resumenTipo').text(tipoTurnoNombre);
-            $('#resumenFecha').text(new Date($('#fecha').val()).toLocaleDateString('es-AR'));
+            
+            const fechaValue = $('#fecha').val();
+            if (fechaValue) {
+                const fechaFormateada = new Date(fechaValue + 'T00:00:00').toLocaleDateString('es-AR');
+                $('#resumenFecha').text(fechaFormateada);
+            } else {
+                $('#resumenFecha').text('-');
+            }
+            
             $('#resumenHora').text($('#horaSeleccionada').val() || '-');
         }
 
-        // Eventos
-        $(document).on('change', 'input[name="TipoTurnoId"]', function () {
+        // Eventos - CORREGIR: usar el nombre correcto del radio button
+        $(document).on('change', 'input[name="TipoTurnoRadio"]', function () {
             $('.turno-card').removeClass('selected');
             $(this).closest('.turno-card').addClass('selected');
+            
+            // Actualizar el campo hidden
+            $('#tipoTurnoIdHidden').val($(this).val());
+            
             cargarHorarios();
         });
 
-        $(document).on('change', '#fecha', function () {
+        $(document).on('change', '#fecha', async function () {
+            const fecha = $(this).val();
+            if (fecha) {
+                await cargarFeriadosDelMes(fecha);
+            }
             cargarHorarios();
         });
 
@@ -688,6 +821,7 @@
 
         // Inicializar
         actualizarStepper();
+        deshabilitarFechasNoDisponibles();
 
         // Establecer fecha mínima (hoy)
         const hoy = new Date().toISOString().split('T')[0];

@@ -1,0 +1,363 @@
+﻿@model ElSentidoDelOido.Negocio.DTOs.ShiftDTO
+
+@{
+    ViewData["Title"] = "Editar Turno";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16255b;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            border-color: #4b5563;
+            color: white;
+        }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #1e3a8a;
+            border-color: #1e3a8a;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 37, 91, 0.3);
+        }
+
+    .btn-outline-secondary {
+        background-color: transparent;
+        border: 2px solid #d1d5db;
+        color: #4b5563;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #f3f4f6;
+            border-color: #4b5563;
+            color: #4b5563;
+        }
+
+    .card-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-info-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(22, 37, 91, 0.05), rgba(30, 58, 138, 0.05));
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+        .card-info-custom .card-body {
+            padding: 1.5rem;
+        }
+
+    .form-label {
+        color: #16255b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control-custom {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        color: #374151;
+    }
+
+        .form-control-custom:focus {
+            border-color: #16255b;
+            box-shadow: 0 0 0 3px rgba(22, 37, 91, 0.1);
+            outline: none;
+        }
+
+    .form-section {
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 10px;
+        border-left: 4px solid #16255b;
+    }
+
+    .section-title {
+        color: #16255b;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .section-title i {
+            font-size: 1.2rem;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .card-title {
+        color: #16255b;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .required-fields {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .required-fields li {
+            color: #4b5563;
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+            .required-fields li:before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #16255b;
+                font-weight: 700;
+            }
+
+    .text-danger {
+        color: #dc2626 !important;
+    }
+
+    @@media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="header-icon">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div>
+                    <h1 class="page-title mb-0">Editar Turno</h1>
+                    <p class="text-muted small mt-1">Modifica los datos del paciente y el mensaje del turno</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Main")" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Form Column -->
+        <div class="col-lg-8">
+            <div class="card card-custom">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" novalidate class="form-custom">
+                        <input asp-for="Id" type="hidden" />
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:@(ViewData.ModelState.IsValid ? "none" : "block");">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Errores en el formulario:</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <h5 class="section-title"><i class="bi bi-person"></i> Datos del paciente</h5>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    <input asp-for="FirstName" class="form-control form-control-custom" />
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido</label>
+                                    <input asp-for="LastName" class="form-control form-control-custom" />
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input asp-for="Email" class="form-control form-control-custom" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input asp-for="Phone" class="form-control form-control-custom" />
+                                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <h5 class="section-title"><i class="bi bi-calendar-event"></i> Información del turno</h5>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Fecha</label>
+                                    <input class="form-control form-control-custom" value="@(Model.Date.HasValue? Model.Date.Value.ToString("dd/MM/yyyy") : "-")" readonly />
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Horario</label>
+                                    <input class="form-control form-control-custom" value="@(Model.ScheduleHour ?? "-")" readonly />
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Tipo de turno</label>
+                                    <input class="form-control form-control-custom" value="@(Model.ShiftTypeName ?? "-")" readonly />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Profesional</label>
+                                <input class="form-control form-control-custom" value="@(Model.ProfessionalName ?? "Sin asignar")" readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ShiftStateId" class="form-label">Estado</label>
+                                @{
+                                    var estados = new[] { "Pendiente", "Confirmado", "Rechazado", "Cancelado", "Culminado" };
+                                }
+                                <select asp-for="ShiftStateId" class="form-select form-control-custom">
+                                    <option value="">-- Selecciona --</option>
+                                    @foreach (var e in estados)
+                                    {
+                                        if (string.Equals(Model.ShiftStateId, e, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <option value="@e" selected="selected">@e</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@e">@e</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ShiftStateId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <h5 class="section-title"><i class="bi bi-chat-left-text"></i> Mensaje</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Mensaje (opcional)</label>
+                                <textarea asp-for="Message" class="form-control form-control-custom" rows="4"></textarea>
+                                <span asp-validation-for="Message" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary-custom btn-lg">
+                                <i class="bi bi-check-lg"></i> Guardar Cambios
+                            </button>
+                            <a href="@Url.Action("Main")" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Panel (copiado de ShiftSchedule Edit) -->
+        <div class="col-lg-4">
+            <div class="card card-info-custom">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-info-circle"></i> Información Importante
+                    </h6>
+                    <p class="card-text small text-muted">
+                        Al editar un turno, puedes modificar los datos del paciente, el mensaje y el estado del turno. La fecha, horario y tipo de turno permanecen de solo lectura en este formulario.
+                    </p>
+                    <hr class="my-3">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb"></i> Consideraciones
+                    </h6>
+                    <ul class="required-fields">
+                        <li>El nombre y apellido son obligatorios para identificar al paciente</li>
+                        <li>Si el turno ya pasó, la edición puede estar bloqueada por validación del servidor</li>
+                        <li>No es posible cambiar fecha/hora desde este formulario</li>
+                        <li>Si el turno está marcado como "Culminado" no podrá editarse según las reglas del sistema</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

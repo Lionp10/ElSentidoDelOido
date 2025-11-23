@@ -72,7 +72,6 @@ namespace ElSentidoDelOido.Datos.DataContext
                       .HasForeignKey(s => s.ScheduleId)
                       .OnDelete(DeleteBehavior.SetNull);
 
-                // Si ShiftSchedule tiene relación opcional a ShiftType sin colección inversa:
                 entity.HasOne(sc => sc.ShiftType)
                       .WithMany()
                       .HasForeignKey(sc => sc.ShiftTypeId)
@@ -84,7 +83,12 @@ namespace ElSentidoDelOido.Datos.DataContext
             {
                 entity.ToTable("Shifts");
                 entity.HasKey(e => e.Id);
-                // Shift.ShiftState es un enum nullable; EF Core lo mapea como entero por defecto.
+
+                entity.Property(e => e.ShiftStateId)
+                      .HasMaxLength(50) 
+                      .IsUnicode(false); 
+
+                entity.Ignore(e => e.ShiftState);
             });
 
             // Holidays (si existe)

@@ -20,7 +20,8 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
         public async Task<IEnumerable<ShiftScheduleDTO>> GetAvailabilityAsync(int shiftTypeId, DateTime date)
         {
             var schedules = (await _repository.GetByShiftTypeAsync(shiftTypeId)).ToList();
-            var occupiedShifts = (await _repository.GetShiftsByTypeAndDateAsync(shiftTypeId, date))
+            
+            var occupiedShifts = (await _repository.GetShiftsByTypeAndDateWithBlockingStatesAsync(shiftTypeId, date))
                                     .Where(s => s.ScheduleId.HasValue)
                                     .Select(s => s.ScheduleId!.Value)
                                     .ToHashSet();
@@ -30,7 +31,7 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
                 {
                     Id = s.Id,
                     Hour = s.Hour,
-                    Enabled = !occupiedShifts.Contains(s.Id),
+                    Enabled = !occupiedShifts.Contains(s.Id), 
                     ShiftTypeId = s.ShiftTypeId,
                     ShiftTypeName = s.ShiftType?.Name
                 })

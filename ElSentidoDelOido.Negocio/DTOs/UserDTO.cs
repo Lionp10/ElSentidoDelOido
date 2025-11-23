@@ -51,7 +51,7 @@ namespace ElSentidoDelOido.Negocio.DTOs
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
         public string? ConfirmPassword { get; set; }
 
-        [Display(Name = "Seleccionar Rol")]
+        [Display(Name = "Rol")]
         public int? RoleId { get; set; }
 
         [Display(Name = "Activo")]

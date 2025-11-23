@@ -8,8 +8,10 @@ namespace ElSentidoDelOido.Datos.Entities.Enums
 {
     public enum ShiftStateEnum
     {
-        Pending = 1,
-        Confirmed = 2,
-        Cancelled = 3
+        Pendiente = 1,
+        Confirmado = 2,
+        Rechazado = 3,
+        Cancelado = 4,
+        Culminado = 5
     }
 }
