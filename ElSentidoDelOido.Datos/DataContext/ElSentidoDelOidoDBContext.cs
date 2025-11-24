@@ -18,12 +18,12 @@ namespace ElSentidoDelOido.Datos.DataContext
         public DbSet<ShiftType> ShiftTypes { get; set; } = null!;
         public DbSet<Professional> Professionals { get; set; } = null!;
         public DbSet<Holidays> Holidays { get; set; } = null!;
+        public DbSet<ContactMessage> ContactMessages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Users <-> UserRole (RoleId nullable)
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("Users");
@@ -40,7 +40,6 @@ namespace ElSentidoDelOido.Datos.DataContext
                 entity.HasKey(e => e.Id);
             });
 
-            // Professionals <-> Shifts
             modelBuilder.Entity<Professional>(entity =>
             {
                 entity.ToTable("Professionals");
@@ -51,7 +50,6 @@ namespace ElSentidoDelOido.Datos.DataContext
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // ShiftType <-> Shifts
             modelBuilder.Entity<ShiftType>(entity =>
             {
                 entity.ToTable("ShiftTypes");
@@ -62,7 +60,6 @@ namespace ElSentidoDelOido.Datos.DataContext
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // ShiftSchedule <-> Shifts
             modelBuilder.Entity<ShiftSchedule>(entity =>
             {
                 entity.ToTable("ShiftSchedules");
@@ -78,7 +75,6 @@ namespace ElSentidoDelOido.Datos.DataContext
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // Shifts
             modelBuilder.Entity<Shift>(entity =>
             {
                 entity.ToTable("Shifts");
@@ -91,11 +87,40 @@ namespace ElSentidoDelOido.Datos.DataContext
                 entity.Ignore(e => e.ShiftState);
             });
 
-            // Holidays (si existe)
             modelBuilder.Entity<Holidays>(entity =>
             {
                 entity.ToTable("Holidays");
                 entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<ContactMessage>(entity =>
+            {
+                entity.ToTable("ContactMessages");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.FullName)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(e => e.Email)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(e => e.Phone)
+                      .HasMaxLength(50);
+
+                entity.Property(e => e.Message)
+                      .IsRequired()
+                      .HasMaxLength(4000);
+
+                entity.Property(e => e.Read)
+                      .HasDefaultValue(false);
+
+                entity.Property(e => e.Answered)
+                      .HasDefaultValue(false);
+
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
             });
         }
     }

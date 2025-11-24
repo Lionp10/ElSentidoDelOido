@@ -6,7 +6,6 @@
 }
 
 <style>
-    /* Estilos coherentes con el resto del sistema (ShiftType / User) */
     .page-title { font-size: 2rem; font-weight: 700; color: #16255b; }
     .header-icon {
         width: 60px;
@@ -56,7 +55,6 @@
     .empty-state i { font-size: 3.5rem; color: #16255b; opacity: 0.3; }
     .empty-state h5 { color: #16255b; font-weight: 600; }
 
-    /* Modal custom (igual estilo que User) */
     .modal-confirm .modal-header { border-bottom: none; background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03)); }
     .modal-confirm .modal-title { color: #16255b; font-weight: 700; }
     .modal-confirm .modal-body { padding: 1.5rem; }
@@ -64,8 +62,8 @@
     .modal-confirm .btn-secondary { background-color: #6b7280; border-color: #6b7280; color: white; }
 
     .btn-group-sm {
-        gap: 0.5rem; /* separa los botones dentro del grupo como en las otras vistas */
-        display: inline-flex; /* asegura compatibilidad en navegadores que no aplican gap a .btn-group por defecto */
+        gap: 0.5rem; 
+        display: inline-flex; 
         align-items: center;
     }
 
@@ -75,7 +73,6 @@
 </style>
 
 <div class="container-fluid py-5">
-    <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="d-flex align-items-center gap-3 mb-3">
@@ -106,7 +103,6 @@
     <div class="card card-custom">
         <div class="card-body">
             <div class="row">
-                <!-- Filters -->
                 <div class="col-lg-3 filter-panel">
                     <h6 class="mb-3">Filtrar por Tipo</h6>
                     <form id="filterForm" method="get" asp-action="Index">
@@ -141,7 +137,6 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div class="col-lg-9">
                     @if (Model.Items != null && Model.Items.Any())
                     {
@@ -181,7 +176,6 @@
                             </table>
                         </div>
 
-                        <!-- Paginación -->
                         <div class="mt-3 d-flex justify-content-between align-items-center">
                             <div class="text-muted">Mostrando página @Model.CurrentPage de @Model.TotalPages</div>
                             <nav>
@@ -213,7 +207,6 @@
 
 </div>
 
-<!-- Confirm Delete Modal -->
 <div class="modal fade modal-confirm" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

@@ -32,7 +32,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
         public async Task<ShiftTypeDTO> CreateAsync(ShiftTypeCreateDTO dto)
         {
             var entity = _mapper.Map<Datos.Entities.ShiftType>(dto);
-            // si quieres alguna regla adicional la agregas aquí
             var created = await _repository.CreateAsync(entity);
             return _mapper.Map<ShiftTypeDTO>(created);
         }
@@ -43,7 +42,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             if (existing == null)
                 throw new KeyNotFoundException($"ShiftType with id {dto.Id} not found.");
 
-            // aplicar cambios
             _mapper.Map(dto, existing);
             var updated = await _repository.UpdateAsync(existing);
             return _mapper.Map<ShiftTypeDTO>(updated);

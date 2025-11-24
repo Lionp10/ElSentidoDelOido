@@ -38,7 +38,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(model);
         }
 
-        // GET Create
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -47,7 +46,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(new ShiftScheduleCreateDTO());
         }
 
-        // POST Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ShiftScheduleCreateDTO dto)
@@ -71,7 +69,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // GET Edit
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -82,31 +79,15 @@ namespace ElSentidoDelOido.Web.Controllers
             {
                 Id = entity.Id,
                 Hour = entity.Hour,
-                ShiftTypeId = null // lo cargamos abajo desde la entidad original
+                ShiftTypeId = null 
             };
 
-            // cargar entidad completa para obtener ShiftTypeId
-            // usamos el repositorio a través del servicio GetByIdAsync que devuelve solo DTO; 
-            // por simplicidad hacemos una llamada al servicio para recuperar ShiftSchedule entity si necesitas ShiftTypeId.
-            // Aquí recuperamos ShiftSchedule a través del repo vía servicio (si no disponible, podríamos exponerlo en servicio).
-            // Para mantener simpleza asumimos que GetByIdAsync devuelve Hour y se requiere selección manual.
             var tipos = await _shiftTypeService.GetAllAsync();
             ViewBag.ShiftTypes = new SelectList(tipos.Where(t => t.Enabled.GetValueOrDefault()), "Id", "Name");
-
-            // Recuperar ShiftSchedule entity para ShiftTypeId:
-            // si servicio no expone ShiftTypeId, mejor llamada directa al repositorio; 
-            // para no romper la capa actual, intentar obtener por medio del repo no inyectado aquí.
-            // Alternativa: usar el servicio para recuperar el ShiftSchedule en formato DTO y además consultar DB por id.
-            // Supongo que GetByIdAsync en servicio no devuelve ShiftTypeId; ajusto llamando a repo directamente no deseable.
-            // Mejor: llamar de nuevo a IShiftScheduleService.GetPagedAsync y filtrar el item. Para evitar inconsistencia, te pregunto si quieres que GetByIdAsync devuelva también ShiftTypeId.
-            // Por ahora, intento cargar el ShiftTypeId desde el repositorio mediante un pequeño helper (no inyectado). 
-            // Para compilar y mantener separacion, vamos a obtener ShiftTypeId usando el servicio GetByIdAsync; 
-            // si necesitas el valor exacto, lo añado en el servicio. Aquí asigno null y el SelectList no seleccionará nada.
 
             return View(dto);
         }
 
-        // POST Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ShiftScheduleUpdateDTO dto)
@@ -130,7 +111,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // POST Delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

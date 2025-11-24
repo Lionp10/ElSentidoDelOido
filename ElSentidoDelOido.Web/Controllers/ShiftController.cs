@@ -4,8 +4,6 @@ using ElSentidoDelOido.Negocio.Services.Interfaces;
 using ElSentidoDelOido.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Globalization;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
@@ -36,10 +34,6 @@ namespace ElSentidoDelOido.Web.Controllers
         #endregion
 
         #region Público - Solicitud de Turnos
-
-        /// <summary>
-        /// Vista pública para solicitar turnos
-        /// </summary>
         public async Task<IActionResult> Index()
         {
             var tipos = await _shiftTypeService.GetAllAsync();
@@ -53,9 +47,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(model);
         }
 
-        /// <summary>
-        /// Procesa la solicitud de turno del paciente
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveTurn(ShiftCreateDTO dto)
@@ -112,9 +103,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View("Index", modelError);
         }
 
-        /// <summary>
-        /// Página de confirmación después de solicitar un turno
-        /// </summary>
         public IActionResult Confirmation()
         {            
             if (TempData["MensajeExito"] == null)
@@ -132,9 +120,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
         #region API Pública - Consulta de Horarios
 
-        /// <summary>
-        /// API para obtener horarios disponibles por tipo de turno y fecha
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObtenerHorarios(int tipoTurnoId, string fecha)
         {
@@ -171,9 +156,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return Json(result);
         }
 
-        /// <summary>
-        /// API para obtener feriados del mes
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObtenerFeriadosDelMes(int year, int month)
         {
@@ -190,9 +172,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
         #region Panel Administrativo - Gestión de Turnos
 
-        /// <summary>
-        /// Vista principal del panel administrativo para gestionar turnos
-        /// </summary>
         [Authorize]
         public async Task<IActionResult> Main(
             DateTime? fecha, 
@@ -214,7 +193,6 @@ namespace ElSentidoDelOido.Web.Controllers
                 { ShiftStateEnum.Culminado.ToString(), "Culminado" }
             };
 
-            // Obtener turnos paginados con filtros
             var (items, totalCount) = await _shiftService.GetPagedAsync(fecha, estado, tipoTurnoId, professionalId, page, pageSize);
 
             var model = new ShiftMainViewModel
@@ -225,7 +203,7 @@ namespace ElSentidoDelOido.Web.Controllers
                 TipoTurnoFiltro = tipoTurnoId,
                 ProfessionalFiltro = professionalId,
                 ShiftTypes = shiftTypes,
-                Professionals = professionals.Where(p => p.Enabled.GetValueOrDefault()), // Solo activos
+                Professionals = professionals.Where(p => p.Enabled.GetValueOrDefault()),
                 EstadosDisponibles = estadosDisponibles,
                 CurrentPage = page,
                 PageSize = pageSize,
@@ -236,16 +214,12 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(model);
         }
 
-        /// <summary>
-        /// GET: Editar turno — solo para turnos cuyo estado != Culminado y cuya fecha+hora ya pasó
-        /// </summary>
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
             var shift = await _shiftService.GetByIdAsync(id);
             if (shift == null) return NotFound();
 
-            // Calcular fecha/hora completa del turno si está disponible
             DateTime? turnoDateTime = null;
             if (shift.Date.HasValue && !string.IsNullOrEmpty(shift.ScheduleHour)
                 && TimeSpan.TryParse(shift.ScheduleHour, out var shiftTime))
@@ -253,7 +227,6 @@ namespace ElSentidoDelOido.Web.Controllers
                 turnoDateTime = shift.Date.Value.Date.Add(shiftTime);
             }
 
-            // Denegar edición si el turno está "Culminado" O si la fecha+hora ya pasó.
             if (string.Equals(shift.ShiftStateId, ShiftStateEnum.Culminado.ToString(), StringComparison.OrdinalIgnoreCase)
                 || (turnoDateTime.HasValue && turnoDateTime.Value <= DateTime.Now))
             {
@@ -261,14 +234,9 @@ namespace ElSentidoDelOido.Web.Controllers
                 return RedirectToAction(nameof(Main));
             }
 
-            // Mostrar vista Edit con el DTO existente
             return View(shift);
         }
 
-        /// <summary>
-        /// POST: Editar turno
-        /// Actualiza solo los campos editables del paciente y mensaje. Revalida condiciones.
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -282,7 +250,6 @@ namespace ElSentidoDelOido.Web.Controllers
             var existing = await _shiftService.GetByIdAsync(dto.Id);
             if (existing == null) return NotFound();
 
-            // Recalcular fecha/hora completa del turno actual
             DateTime? turnoDateTime = null;
             if (existing.Date.HasValue && !string.IsNullOrEmpty(existing.ScheduleHour)
                 && TimeSpan.TryParse(existing.ScheduleHour, out var shiftTime))
@@ -290,7 +257,6 @@ namespace ElSentidoDelOido.Web.Controllers
                 turnoDateTime = existing.Date.Value.Date.Add(shiftTime);
             }
 
-            // Denegar edición si el turno está "Culminado" O si la fecha+hora ya pasó.
             if (string.Equals(existing.ShiftStateId, ShiftStateEnum.Culminado.ToString(), StringComparison.OrdinalIgnoreCase)
                 || (turnoDateTime.HasValue && turnoDateTime.Value <= DateTime.Now))
             {
@@ -300,7 +266,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
             try
             {
-                // Actualizar únicamente campos permitidos para evitar sobrescribir propiedades no enviadas
                 existing.FirstName = dto.FirstName;
                 existing.LastName = dto.LastName;
                 existing.Email = dto.Email;
@@ -319,9 +284,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        /// <summary>
-        /// Eliminar un turno (solo administradores)
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -340,9 +302,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Main));
         }
 
-        /// <summary>
-        /// Aprobar un turno pendiente asignando un profesional
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -361,9 +320,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Main));
         }
 
-        /// <summary>
-        /// Rechazar un turno pendiente
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -382,9 +338,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Main));
         }
 
-        /// <summary>
-        /// Cancelar un turno confirmado
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -403,9 +356,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Main));
         }
 
-        /// <summary>
-        /// Marcar un turno como culminado
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]

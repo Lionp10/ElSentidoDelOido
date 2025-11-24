@@ -90,7 +90,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             if (!dto.ShiftTypeId.HasValue)
                 throw new ArgumentException("ShiftTypeId is required", nameof(dto.ShiftTypeId));
 
-            // Verificar duplicado
             var exists = await _repository.ExistsByHourAndTypeAsync(dto.Hour!.Trim(), dto.ShiftTypeId.Value);
             if (exists)
                 throw new InvalidOperationException("Ya existe un horario igual para el tipo de turno seleccionado.");
@@ -103,7 +102,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
 
             var created = await _repository.CreateAsync(entity);
 
-            // obtener con ShiftType incluido (CreateAsync devuelve recargado)
             var reloaded = await _repository.GetByIdAsync(created.Id);
 
             return new ShiftScheduleDTO

@@ -71,7 +71,7 @@ namespace ElSentidoDelOido.Negocio.DTOs
         public string? Email { get; set; }
 
         [DataType(DataType.Password)]
-        public string? Password { get; set; } // null = no cambiar
+        public string? Password { get; set; }
 
         public int? RoleId { get; set; }
 

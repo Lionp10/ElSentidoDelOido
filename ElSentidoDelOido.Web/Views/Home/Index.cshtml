@@ -37,9 +37,8 @@
         margin-bottom: 2rem;
     }
 
-        /* Mejor contraste para enlaces y textos de contacto dentro de la caja */
         .info-box a {
-            color: #f5f7fb; /* gris muy claro / casi blanco */
+            color: #f5f7fb; 
             font-weight: 600;
             text-decoration: underline;
         }
@@ -52,23 +51,27 @@
 
         .info-box p.small,
         .info-box .contact-item .mb-0 {
-            color: #e6eef9; /* texto descriptivo más claro */
-            opacity: 1; /* quitar la semitransparencia para mejor legibilidad */
+            color: #e6eef9; 
+            opacity: 1; 
         }
 
         .info-box .contact-item a {
             display: inline-block;
             margin-top: 4px;
-            color: #f5f7fb; /* números y enlaces destacados */
+            color: #f5f7fb; 
             font-weight: 600;
         }
 
         .info-box .contact-item i {
-            color: #f0f5fb; /* iconos más visibles */
+            color: #f0f5fb; 
         }
+
+    .char-counter {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
 </style>
 
-<!-- Hero Section -->
 <section class="hero-section" id="Inicio">
     <div class="container">
         <div class="row align-items-center hero-content">
@@ -89,7 +92,6 @@
     </div>
 </section>
 
-<!-- About Section -->
 <section id="Nosotros" class="py-5">
     <div class="container">
         <div class="about-section">
@@ -118,7 +120,6 @@
     </div>
 </section>
 
-<!-- Services Section -->
 <section id="Servicios" class="py-5" style="background-color: #f8f9fa;">
     <div class="container">
         <div class="section-header">
@@ -128,7 +129,6 @@
         </div>
 
         <div class="service-grid">
-            <!-- Service 1 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-ear"></i>
@@ -138,7 +138,6 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_1" class="btn btn-sm btn-outline-primary">Saber más</a>
             </div>
 
-            <!-- Service 2 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-soundwave"></i>
@@ -148,7 +147,6 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_2" class="btn btn-sm btn-outline-primary">Saber más</a>
             </div>
 
-            <!-- Service 3 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-headphones"></i>
@@ -158,7 +156,6 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_3" class="btn btn-sm btn-outline-primary">Saber más</a>
             </div>
 
-            <!-- Service 4 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-reception-2"></i>
@@ -168,7 +165,6 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_4" class="btn btn-sm btn-outline-primary">Saber más</a>
             </div>
 
-            <!-- Service 5 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-people"></i>
@@ -178,7 +174,6 @@
                 <a href="#" data-bs-toggle="modal" data-bs-target="#servicio_5" class="btn btn-sm btn-outline-primary">Saber más</a>
             </div>
 
-            <!-- Service 6 -->
             <div class="service-card">
                 <div class="service-icon">
                     <i class="bi bi-chat-dots"></i>
@@ -236,13 +231,27 @@
             </div>
         </div>
 
-        <!-- Contact Form -->
         <div class="col-lg-12">
             <div class="contact-form">
                 <h5 class="mb-4 fw-bold">Formulario de Contacto</h5>
 
-                @using (Html.BeginForm("EnviarFormulario", "Home", FormMethod.Post))
+                @if (TempData["FormSuccess"] != null)
                 {
+                    <div class="alert alert-success" role="alert">
+                        <i class="bi bi-check-circle me-2"></i> @TempData["FormSuccess"]
+                    </div>
+                }
+                else if (TempData["FormError"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i> @TempData["FormError"]
+                    </div>
+                }
+
+                @using (Html.BeginForm("EnviarFormulario", "Home", FormMethod.Post, new { id = "contactForm" }))
+                {
+                    @Html.AntiForgeryToken()
+
                     <div class="mb-3">
                         <label for="nombreCompleto" class="form-label">Nombre Completo</label>
                         <div class="input-group">
@@ -269,7 +278,8 @@
 
                     <div class="mb-3">
                         <label for="mensaje" class="form-label">Mensaje</label>
-                        <textarea class="form-control" id="mensaje" name="Mensaje" rows="4" placeholder="Cuéntanos cómo podemos ayudarte..." required></textarea>
+                        <textarea class="form-control" id="mensaje" name="Mensaje" rows="4" placeholder="Cuéntanos cómo podemos ayudarte..." required maxlength="500" aria-describedby="mensajeCounter"></textarea>
+                        <div id="mensajeCounter" class="form-text text-end char-counter">0/500</div>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
@@ -281,9 +291,25 @@
     </div>
 </section>
 
-<!-- Modals -->
+<div class="modal fade" id="contactResultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contacto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="contactResultMessage">Mensaje enviado correctamente.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="contactResultOk" type="button" class="btn btn-primary">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="servicio_1" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Audiometría y Logoaudiometría</h5>
@@ -299,7 +325,7 @@
 </div>
 
 <div class="modal fade" id="servicio_2" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Otoemisiones Acústicas</h5>
@@ -315,7 +341,7 @@
 </div>
 
 <div class="modal fade" id="servicio_3" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Preselección y Selección de Audífonos</h5>
@@ -331,7 +357,7 @@
 </div>
 
 <div class="modal fade" id="servicio_4" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Tratamiento de Tinnitus</h5>
@@ -347,7 +373,7 @@
 </div>
 
 <div class="modal fade" id="servicio_5" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Rehabilitación Auditiva</h5>
@@ -361,3 +387,104 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const textarea = document.getElementById('mensaje');
+            const counter = document.getElementById('mensajeCounter');
+            if (!textarea || !counter) return;
+
+            const max = textarea.getAttribute('maxlength') ? parseInt(textarea.getAttribute('maxlength')) : 500;
+
+            function updateCounter() {
+                if (textarea.value.length > max) {
+                    textarea.value = textarea.value.substring(0, max);
+                }
+                const len = textarea.value.length;
+                counter.textContent = `${len}/${max}`;
+
+                if (len >= max) {
+                    counter.classList.remove('text-muted');
+                    counter.classList.add('text-danger');
+                } else if (len >= max - 30) {
+                    counter.classList.remove('text-muted');
+                    counter.classList.add('text-warning');
+                    counter.classList.remove('text-danger');
+                } else {
+                    counter.classList.remove('text-warning', 'text-danger');
+                    counter.classList.add('text-muted');
+                }
+            }
+
+            textarea.addEventListener('input', updateCounter);
+            updateCounter();
+        })();
+    </script>
+
+    <script>
+        (function ($) {
+            $('#contactForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var url = $form.attr('action') || window.location.href;
+                var data = $form.serialize();
+
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: data,
+                    dataType: 'html',
+                    success: function (response) {
+                        var $resp = $('<div>').html(response);
+                        var successAlert = $resp.find('.alert.alert-success').first();
+                        var errorAlert = $resp.find('.alert.alert-danger').first();
+
+                        if (successAlert.length) {
+                            var msg = successAlert.text().trim() || 'Mensaje enviado correctamente.';
+                            $('#contactResultMessage').text(msg);
+                            var modal = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                            modal.show();
+
+                            $('#contactResultOk').off('click').on('click', function () {
+                                modal.hide();
+                                window.location.reload();
+                            });
+                        } else if (errorAlert.length) {
+                            var err = errorAlert.text().trim() || 'Ocurrió un error al enviar el mensaje.';
+                            $('#contactResultMessage').text(err);
+                            var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                            modalErr.show();
+                            $('#contactResultOk').off('click').on('click', function () {
+                                modalErr.hide();
+                            });
+                        } else {
+                            $('#contactResultMessage').text('Mensaje enviado correctamente. Gracias.');
+                            var modalDef = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                            modalDef.show();
+                            $('#contactResultOk').off('click').on('click', function () {
+                                modalDef.hide();
+                                window.location.reload();
+                            });
+                        }
+                    },
+                    error: function (xhr, status, err) {
+                        var text = 'Error al enviar el mensaje. Intenta nuevamente.';
+                        if (xhr && xhr.responseText) {
+                            var $r = $('<div>').html(xhr.responseText);
+                            var serverMsg = $r.find('.alert.alert-danger').text().trim();
+                            if (serverMsg) text = serverMsg;
+                        }
+                        $('#contactResultMessage').text(text);
+                        var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                        modalErr.show();
+                        $('#contactResultOk').off('click').on('click', function () {
+                            modalErr.hide();
+                        });
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+}

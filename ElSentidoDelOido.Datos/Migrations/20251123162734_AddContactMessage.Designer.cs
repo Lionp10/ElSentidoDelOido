@@ -4,6 +4,7 @@ using ElSentidoDelOido.Datos.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ElSentidoDelOido.Datos.Migrations
 {
     [DbContext(typeof(ElSentidoDelOidoDBContext))]
-    partial class ElSentidoDelOidoDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251123162734_AddContactMessage")]
+    partial class AddContactMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

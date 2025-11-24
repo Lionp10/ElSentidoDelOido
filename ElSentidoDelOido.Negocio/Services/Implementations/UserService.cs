@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
 using ElSentidoDelOido.Datos.Entities;
-using ElSentidoDelOido.Datos.Repositories.Implementations;
 using ElSentidoDelOido.Datos.Repositories.Interfaces;
 using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Helpers;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace ElSentidoDelOido.Negocio.Services.Implementations
 {
@@ -53,10 +50,8 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             if (entity == null)
                 throw new KeyNotFoundException($"User with id {dto.Id} not found.");
 
-            // Mapear cambios del DTO sobre la entidad cargada
             _mapper.Map(dto, entity);
 
-            // Si se envía password, hashearla; si no, dejar la existente
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
                 entity.Password = Encrypt.HashPassword(dto.Password);
@@ -76,12 +71,9 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             var userEntity = await _repository.GetByEmailAsync(email);
             if (userEntity == null) return null;
 
-            // Rechazar si el usuario no está activo (Enabled != true)
             if (!userEntity.Enabled.GetValueOrDefault())
                 return null;
 
-            // Ajusta la verificación según cómo guardes la contraseña.
-            // Ejemplo usando BCrypt (recomendado). Añadir paquete BCrypt.Net-Next.
             try
             {
                 var hashed = userEntity.Password ?? string.Empty;
@@ -90,7 +82,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             }
             catch
             {
-                // Si no usas hash, puedes usar comparación simple (no recomendado):
                 if (userEntity.Password != password) return null;
             }
 

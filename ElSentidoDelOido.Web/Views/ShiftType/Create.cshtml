@@ -224,7 +224,6 @@
 </style>
 
 <div class="container-fluid py-5">
-    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="d-flex align-items-center gap-3 mb-3">
@@ -244,7 +243,6 @@
         </div>
     </div>
 
-    <!-- Form Card -->
     <div class="row">
         <div class="col-lg-8">
             <div class="card card-custom">
@@ -252,14 +250,12 @@
                     <form asp-action="Create" method="post" novalidate class="form-custom">
                         @Html.AntiForgeryToken()
 
-                        <!-- Validation Summary -->
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             <strong>Errores en el formulario:</strong>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
 
-                        <!-- Styled form section matching User Create view -->
                         <div class="form-section mb-4">
                             <h5 class="section-title">
                                 <i class="bi bi-tag"></i> Información del Tipo de Turno
@@ -271,7 +267,6 @@
                             </div>
                         </div>
 
-                        <!-- State Section -->
                         <div class="form-section mb-4">
                             <h5 class="section-title">
                                 <i class="bi bi-toggle2-on"></i> Estado
@@ -285,7 +280,6 @@
                             <small class="text-muted d-block mt-2">Si lo deshabilitas, no aparecerá disponible en las solicitudes de turno</small>
                         </div>
 
-                        <!-- Form Actions -->
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary-custom btn-lg">
                                 <i class="bi bi-check-lg"></i> Crear Tipo de Turno
@@ -299,7 +293,6 @@
             </div>
         </div>
 
-        <!-- Information Panel -->
         <div class="col-lg-4">
             <div class="card card-info-custom">
                 <div class="card-body">

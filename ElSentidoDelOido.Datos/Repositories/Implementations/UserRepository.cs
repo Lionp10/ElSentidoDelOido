@@ -34,7 +34,6 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Cargar Role si existe para que quede disponible en el resultado
             await _context.Entry(user).Reference(u => u.Role).LoadAsync();
 
             return user;

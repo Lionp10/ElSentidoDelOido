@@ -33,7 +33,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
         {
             if (dto.Date == default) throw new ArgumentException("Date is required", nameof(dto.Date));
 
-            // Validar duplicado por fecha
             if (await _repository.ExistsByDateAsync(dto.Date))
                 throw new InvalidOperationException("Ya existe un feriado para esa fecha.");
 
@@ -49,7 +48,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             var existing = await _repository.GetByIdAsync(dto.Id);
             if (existing == null) throw new KeyNotFoundException($"Holidays with id {dto.Id} not found.");
 
-            // Validar duplicado por fecha excluyendo el propio registro
             if (await _repository.ExistsByDateAsync(dto.Date, dto.Id))
                 throw new InvalidOperationException("Ya existe un feriado para esa fecha.");
 

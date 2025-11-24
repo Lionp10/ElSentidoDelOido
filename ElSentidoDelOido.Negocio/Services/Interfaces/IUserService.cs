@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using ElSentidoDelOido.Negocio.DTOs;
-using System.Collections.Generic;
+﻿using ElSentidoDelOido.Negocio.DTOs;
 
 namespace ElSentidoDelOido.Negocio.Services.Interfaces
 {

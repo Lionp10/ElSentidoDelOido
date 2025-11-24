@@ -1,6 +1,4 @@
-﻿// Validación cliente para contraseñas (integra con el formulario .form-custom)
-// Requiere jQuery cargado.
-(function ($) {
+﻿(function ($) {
     $(function () {
         var config = {
             minlength: 8,
@@ -21,9 +19,7 @@
             return { ok: true, message: "" };
         }
 
-        // Lugar donde mostramos mensaje junto al control
         function showFieldError($input, message) {
-            // eliminar mensajes previos
             $input.next(".pwd-error").remove();
             if (message) {
                 var $err = $("<div class='text-danger pwd-error small mt-1'></div>").text(message);
@@ -31,7 +27,6 @@
             }
         }
 
-        // Añadir comprobación al cambiar el campo contraseña y confirmación
         $(".form-custom").on("input change", "input[name='Password'], input[name='ConfirmPassword']", function () {
             var $form = $(this).closest(".form-custom");
             var pwd = $form.find("input[name='Password']").val() || "";
@@ -40,21 +35,19 @@
             var res = checkPasswordRules(pwd);
             showFieldError($form.find("input[name='Password']"), res.ok ? "" : res.message);
 
-            // validación de confirm
             $form.find("input[name='ConfirmPassword']").next(".pwd-error").remove();
             if (confirm && pwd !== confirm) {
                 showFieldError($form.find("input[name='ConfirmPassword']"), "Las contraseñas no coinciden.");
             }
         });
 
-        // Validar en submit
         $(".form-custom").on("submit", function (e) {
             var $form = $(this);
             var pwd = $form.find("input[name='Password']").val() || "";
             var confirm = $form.find("input[name='ConfirmPassword']").val() || "";
 
             var res = checkPasswordRules(pwd);
-            // limpiar errores previos
+
             $form.find(".pwd-error").remove();
             $form.find(".client-validation-summary").remove();
 
@@ -70,7 +63,6 @@
             }
 
             if (hasError) {
-                // añadir summary al inicio del form (para integrarlo visualmente)
                 var $summary = $("<div class='alert alert-danger client-validation-summary mt-2' role='alert'></div>");
                 var msgs = [];
                 if (!res.ok) msgs.push(res.message);
@@ -82,7 +74,6 @@
                 return false;
             }
 
-            // permitir submit; servidor también validará.
             return true;
         });
     });

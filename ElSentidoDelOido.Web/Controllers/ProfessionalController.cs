@@ -13,20 +13,17 @@ namespace ElSentidoDelOido.Web.Controllers
             _service = service;
         }
 
-        // GET: /Professional
         public async Task<IActionResult> Index()
         {
             var items = await _service.GetAllAsync();
             return View(items);
         }
 
-        // GET: /Professional/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: /Professional/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProfessionalCreateDTO dto)
@@ -37,7 +34,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: /Professional/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
             var item = await _service.GetByIdAsync(id);
@@ -57,7 +53,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(editDto);
         }
 
-        // POST: /Professional/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ProfessionalUpdateDTO dto)
@@ -76,7 +71,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: /Professional/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -85,7 +79,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: /Professional/Reactivate/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reactivate(int id)

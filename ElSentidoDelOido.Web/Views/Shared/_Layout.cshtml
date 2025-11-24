@@ -5,13 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - El Sentido del Oído</title>
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Favicon -->
     <link rel="icon" type="image/jpg" href="~/images/Esdo.ico" />
 
     <style>
@@ -46,7 +41,6 @@
             line-height: 1.6;
         }
 
-        /* Header Top Section */
         .header-top {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
             color: white;
@@ -71,7 +65,6 @@
             margin: 0 1rem;
         }
 
-        /* Navbar */
         .navbar {
             background-color: white !important;
             box-shadow: 0 2px 4px rgba(22, 37, 91, 0.08);
@@ -122,7 +115,6 @@
             width: 100%;
         }
 
-        /* Primary Button */
         .btn-primary {
             background-color: var(--color-primary);
             border-color: var(--color-primary);
@@ -142,7 +134,6 @@
             transform: translateY(0);
         }
 
-        /* Outline Button */
         .btn-outline-primary {
             color: var(--color-primary);
             border-color: var(--color-primary);
@@ -155,7 +146,6 @@
             transform: translateY(-2px);
         }
 
-        /* Hero Section */
         .hero-section {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
             color: white;
@@ -193,7 +183,6 @@
             line-height: 1.8;
         }
 
-        /* Section Headers */
         .section-header {
             margin-bottom: 3rem;
         }
@@ -219,7 +208,6 @@
             line-height: 1.8;
         }
 
-        /* Cards */
         .service-card {
             background: white;
             border: 1px solid var(--color-border);
@@ -250,7 +238,6 @@
             font-size: 2rem;
         }
 
-        /* Form Styles */
         .form-group label {
             color: var(--color-text-primary);
             font-weight: 600;
@@ -280,7 +267,6 @@
             color: var(--color-primary);
         }
 
-        /* Modal Styles */
         .modal-header {
             background-color: var(--color-primary);
             color: white;
@@ -295,7 +281,6 @@
             font-weight: 700;
         }
 
-        /* Footer */
         footer {
             background-color: var(--color-primary);
             color: white;
@@ -343,7 +328,6 @@
             opacity: 0.8;
         }
 
-        /* Contact Section */
         .contact-item {
             margin-bottom: 1.5rem;
             display: flex;
@@ -368,7 +352,6 @@
             color: var(--color-accent);
         }
 
-        /* Responsive */
         @@media (max-width: 768px) {
             .hero-title {
                 font-size: 1.75rem;
@@ -382,16 +365,11 @@
                 padding: 3rem 0;
             }
 
-            .header-top-divider {
-                display: none;
-            }
-
             .nav-link {
                 margin: 0.5rem 0;
             }
         }
 
-        /* Estilo visual para que el botón hamburguesa destaque */
         .navbar-toggler {
             background: var(--color-primary);
             border: 2px solid rgba(0,0,0,0.08);
@@ -401,18 +379,15 @@
             align-items: center;
             justify-content: center;
             transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-            /* opcional: eleva ligeramente para que no quede pegado al borde */
             margin-left: 8px;
         }
 
-            /* Icono (Bootstrap Icons) en blanco para alto contraste */
             .navbar-toggler .bi {
                 color: #fff;
                 font-size: 1.25rem;
                 line-height: 1;
             }
 
-            /* Hover / focus accesible */
             .navbar-toggler:hover,
             .navbar-toggler:focus {
                 transform: translateY(-2px);
@@ -425,7 +400,7 @@
             border: 2px solid var(--color-primary);
         }
         .navbar-toggler .bi { color: var(--color-primary); }
-        
+
 
         @@media (min-width: 992px) {
             .navbar-toggler
@@ -435,11 +410,50 @@
         }
 
         }
+
+        @@media (max-width: 991.98px) {
+            .navbar {
+                position: relative; 
+            }
+
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                width: 100%;
+                background: white;
+                z-index: 1045;
+                padding: 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+                border-bottom-left-radius: 8px;
+                border-bottom-right-radius: 8px;
+            }
+
+            .navbar-collapse .navbar-nav {
+                flex-direction: column;
+            }
+
+            .navbar-collapse .ms-3 {
+                margin-top: 1rem;
+                display: flex;
+                justify-content: center;
+            }
+
+            .navbar-collapse {
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
+            }
+
+            body.navbar-open {
+                overflow: hidden;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Header Top -->
+
     <div class="header-top">
         <div class="container">
             <div class="row align-items-center">
@@ -452,7 +466,7 @@
                         </div>
                         <span class="header-top-divider"></span>
                         <div class="d-flex align-items-center">
-                            <a href='@Url.Content("https://www.google.com.ar/maps/search/el+sentido+del+o%C3%ADdo/@-33.1486347,-61.4730777,16z/data=!3m1!4b1?hl=es&authuser=4")' target="_blank">
+                            <a href='@Url.Content("https://www.google.com.ar/maps/search/el+sentido+del+o%C3%ADdo/@-33.147306,-61.473141,16z/data=!3m1!4b1?hl=es&authuser=4")' target="_blank">
                                 <i class="bi bi-geo-alt"></i> Consultorios
                             </a>
                         </div>
@@ -462,7 +476,6 @@
         </div>
     </div>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="@Url.Action("Index", "Home")">
@@ -500,12 +513,10 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="container-fluid p-0">
         @RenderBody()
     </main>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="row">
@@ -559,13 +570,11 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Smooth scrolling for navigation links
             const links = document.querySelectorAll('a[href^="#"]');
             links.forEach(link => {
                 link.addEventListener('click', function (e) {
@@ -581,7 +590,6 @@
                             block: 'start'
                         });
 
-                        // Close navbar if open
                         const navbar = document.querySelector('.navbar-collapse');
                         if (navbar.classList.contains('show')) {
                             const toggler = document.querySelector('.navbar-toggler');
@@ -591,7 +599,6 @@
                 });
             });
 
-            // Update active nav link on scroll
             const sections = document.querySelectorAll('section[id], div[id]');
             window.addEventListener('scroll', () => {
                 let current = '';
@@ -612,11 +619,10 @@
         });
 
             $(function () {
-            // Maneja enlaces que contienen '#'
             $('a[href*="#"]').on('click', function (e) {
                 var href = $(this).attr('href') || '';
                 var targetAttr = $(this).attr('target');
-                if (targetAttr === '_blank') return; // respetar enlaces externos
+                if (targetAttr === '_blank') return; 
 
                 var hashIndex = href.indexOf('#');
                 if (hashIndex === -1) return;
@@ -624,45 +630,30 @@
                 var fragment = href.substring(hashIndex + 1);
                 if (!fragment) return;
 
-                // Crear <a> para parsear la url del enlace
                 var temp = document.createElement('a');
                 temp.href = href;
 
-                // path + search de la url del enlace
                 var linkPath = temp.pathname.replace(/\/$/, '') + (temp.search || '');
-                // path + search actual
                 var currentPath = window.location.pathname.replace(/\/$/, '') + (window.location.search || '');
-
-                // Si el enlace no tiene path (href="#...") o apunta a la misma ruta actual -> hacer smooth scroll
                 var isSamePage = (!linkPath || linkPath === currentPath || linkPath === '' && currentPath === '');
-
-                // Además considerar que el Home puede estar en '/' o en '/Home'/'/Home/Index'
                 var normalizedLinkIsHome = linkPath === '' || /\/(home(\/index)?)?$/i.test(linkPath);
                 var normalizedCurrentIsHome = /\/(home(\/index)?)?$/i.test(window.location.pathname);
 
                 if (isSamePage || (normalizedLinkIsHome && normalizedCurrentIsHome)) {
-                    // ya en página destino: smooth scroll si existe el elemento
                     var $targetEl = $('#' + fragment);
                     if ($targetEl.length) {
                         e.preventDefault();
                         $('html, body').animate({ scrollTop: $targetEl.offset().top }, 500);
 
-                        // cerrar navbar collapse si está abierto (Bootstrap)
                         var $collapse = $('.navbar-collapse');
                         if ($collapse.hasClass('show')) {
                             $('.navbar-toggler').click();
                         }
                     }
-                    // si no existe el elemento, dejar comportamiento por defecto (no hacer nada)
                     return;
                 }
-
-                // Si llegamos aquí, el enlace apunta a otra ruta (por ejemplo Home#Servicios) y no estamos en Home:
-                // dejar que el navegador navegue normalmente (se cargará Home y el fragment hará el scroll).
-                // No hacer preventDefault.
             });
 
-            // Actualizar active nav cuando se haga scroll (mantener lógica existente)
             var sections = $('section[id], div[id]');
             $(window).on('scroll', function () {
                 var current = '';
@@ -680,6 +671,13 @@
                         $(this).addClass('active');
                     }
                 });
+            });
+
+            $('#navbarNav').on('shown.bs.collapse', function () {
+                $('body').addClass('navbar-open');
+            });
+            $('#navbarNav').on('hidden.bs.collapse', function () {
+                $('body').removeClass('navbar-open');
             });
         });
     </script>

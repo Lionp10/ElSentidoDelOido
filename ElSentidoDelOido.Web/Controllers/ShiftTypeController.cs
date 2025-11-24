@@ -21,14 +21,12 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(items);
         }
 
-        // GET: Create
         [HttpGet]
         public IActionResult Create()
         {
             return View(new ShiftTypeCreateDTO());
         }
 
-        // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ShiftTypeCreateDTO dto)
@@ -49,7 +47,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // GET: Edit
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -67,7 +64,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(dto);
         }
 
-        // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ShiftTypeUpdateDTO dto)
@@ -88,7 +84,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // POST: Delete (soft)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -105,7 +100,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Reactivate
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reactivate(int id)

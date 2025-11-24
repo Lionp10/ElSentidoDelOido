@@ -16,7 +16,6 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
 
         public async Task<IEnumerable<UserRole>> GetActiveAsync()
         {
-            // Evitar error de conversión entre bool? y bool en el lambda:
             return await _context.UserRoles
                 .Where(r => r.Enabled.HasValue && r.Enabled.Value)
                 .AsNoTracking()

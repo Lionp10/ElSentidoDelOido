@@ -33,7 +33,7 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
         public async Task<ProfessionalDTO> CreateAsync(ProfessionalCreateDTO dto)
         {
             var entity = _mapper.Map<Professional>(dto);
-            // asegurar valor por defecto
+
             if (!entity.Enabled.HasValue) entity.Enabled = dto.Enabled;
 
             var created = await _repository.CreateAsync(entity);

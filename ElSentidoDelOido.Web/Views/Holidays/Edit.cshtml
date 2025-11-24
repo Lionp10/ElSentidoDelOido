@@ -182,7 +182,6 @@
 </style>
 
 <div class="container-fluid py-5">
-    <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="d-flex align-items-center gap-3 mb-3">
@@ -202,7 +201,6 @@
         </div>
     </div>
 
-    <!-- Form + Info panel -->
     <div class="row">
         <div class="col-lg-8">
             <div class="card card-custom">
@@ -211,7 +209,6 @@
                         <input asp-for="Id" type="hidden" />
                         @Html.AntiForgeryToken()
 
-                        <!-- Validation Summary -->
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             <strong>Errores en el formulario:</strong>

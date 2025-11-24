@@ -37,8 +37,7 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
         {
             _context.Shifts.Add(entity);
             await _context.SaveChangesAsync();
-            
-            // Recargar con las entidades relacionadas
+
             return await GetByIdAsync(entity.Id) ?? entity;
         }
 
@@ -64,7 +63,6 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
                 .FirstOrDefaultAsync(s => s.Hour == hour && s.ShiftTypeId == shiftTypeId);
         }
 
-        // Nuevo método para paginación con filtros
         public async Task<(IEnumerable<Shift> Items, int TotalCount)> GetPagedAsync(
             DateTime? fecha, 
             string? estado, 
@@ -79,7 +77,6 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
                 .Include(s => s.Professional)
                 .AsQueryable();
 
-            // Aplicar filtros
             if (fecha.HasValue)
             {
                 var fechaFiltro = fecha.Value.Date;
@@ -101,10 +98,8 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
                 query = query.Where(s => s.ProfessionalId == professionalId.Value);
             }
 
-            // Contar total
             var totalCount = await query.CountAsync();
 
-            // Aplicar paginación y ordenar por fecha descendente
             var items = await query
                 .OrderByDescending(s => s.Date)
                 .ThenByDescending(s => s.Id)

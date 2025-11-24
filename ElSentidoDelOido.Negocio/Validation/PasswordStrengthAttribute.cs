@@ -1,14 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ElSentidoDelOido.Negocio.Validation
 {
-    /// <summary>
-    /// Validación de fuerza de contraseña (servidor).
-    /// No implementa interfaces de MVC para evitar referencias a Microsoft.AspNetCore en el proyecto 'Negocio'.
-    /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class PasswordStrengthAttribute : ValidationAttribute
     {
@@ -28,7 +23,6 @@ namespace ElSentidoDelOido.Negocio.Validation
             var password = value as string;
             if (string.IsNullOrEmpty(password))
             {
-                // Dejar que [Required] maneje vacío si también está aplicado.
                 return ValidationResult.Success;
             }
 

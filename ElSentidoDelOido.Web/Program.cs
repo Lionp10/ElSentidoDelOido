@@ -6,10 +6,11 @@ using ElSentidoDelOido.Negocio.Services.Implementations;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext
 builder.Services.AddDbContext<ElSentidoDelOidoDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -20,9 +21,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Auth/Logout";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
+
         options.Cookie.Name = "EsdoAuth";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+
+        options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization();
@@ -49,12 +53,53 @@ builder.Services.AddScoped<IHolidaysService, HolidaysService>();
 builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 
+builder.Services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
+builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
+
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-// Registrar MVC (Controllers + Views) y Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+var keysFolder = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "DataProtection-Keys"));
+if (!keysFolder.Exists) keysFolder.Create();
+
+var dp = builder.Services.AddDataProtection()
+    .SetApplicationName("ElSentidoDelOido")
+    .PersistKeysToFileSystem(keysFolder);
+
+var certThumbprint = builder.Configuration["DataProtection:CertificateThumbprint"];
+if (!string.IsNullOrEmpty(certThumbprint))
+{
+    try
+    {
+        using var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadOnly);
+        var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certThumbprint, false);
+        if (certs.Count > 0)
+        {
+            dp.ProtectKeysWithCertificate(certs[0]);
+        }
+        store.Close();
+    }
+    catch
+    {
+        // si falla, se intentará DPAPI abajo (o quedará sin encryptor)
+    }
+}
+else if (OperatingSystem.IsWindows())
+{
+    try
+    {
+        dp.ProtectKeysWithDpapi(protectToLocalMachine: true);
+    }
+    catch
+    {
+        // si no es posible (hosting restringido), las claves quedarán sin cifrar
+    }
+}
 
 var app = builder.Build();
 
@@ -69,14 +114,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Rutas MVC: HomeController -> Index por defecto
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Mantener Razor Pages si las usas
 app.MapRazorPages();
 
 app.Run();

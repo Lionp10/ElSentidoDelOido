@@ -21,14 +21,12 @@ namespace ElSentidoDelOido.Web.Controllers
             _role_service = roleService;
         }
 
-        // Index
         public async Task<IActionResult> Index()
         {
             var users = await _userService.GetAllAsync();
             return View(users);
         }
 
-        // GET: Create
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -36,7 +34,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(new UserCreateDTO());
         }
 
-        // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserCreateDTO dto)
@@ -62,7 +59,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // GET: Edit
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -77,14 +73,13 @@ namespace ElSentidoDelOido.Web.Controllers
                 LastName = user.LastName,
                 Email = user.Email,
                 RoleId = user.RoleId,
-                Enabled = user.Enabled.GetValueOrDefault() // evita NullReference si user.Enabled es null
+                Enabled = user.Enabled.GetValueOrDefault()
             };
 
             await PopulateRolesAsync();
             return View(dto);
         }
 
-        // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserUpdateDTO dto)
@@ -99,11 +94,9 @@ namespace ElSentidoDelOido.Web.Controllers
             {
                 var updated = await _userService.UpdateAsync(dto);
 
-                // Si el usuario actualizado es el mismo que el logueado, actualizar claims/cookie
                 var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(currentUserId) && int.TryParse(currentUserId, out var curId) && curId == dto.Id)
                 {
-                    // Construir nuevas claims a partir del usuario actualizado
                     var claims = new[]
                     {
                         new Claim(ClaimTypes.NameIdentifier, updated.Id.ToString()),
@@ -115,7 +108,6 @@ namespace ElSentidoDelOido.Web.Controllers
                     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var principal = new ClaimsPrincipal(identity);
 
-                    // Reutilizar AuthenticationProperties actuales si existen para preservar persistencia/expiración
                     var currentAuth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     var props = currentAuth?.Properties ?? new AuthenticationProperties
                     {
@@ -137,7 +129,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // POST: Deactivate (dar de baja -> Enabled = false)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deactivate(int id)
@@ -160,7 +151,6 @@ namespace ElSentidoDelOido.Web.Controllers
             {
                 var updated = await _userService.UpdateAsync(dto);
 
-                // Si desactivó su propia cuenta, cerrar sesión
                 var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(currentUserId) && int.TryParse(currentUserId, out var curId) && curId == id)
                 {
@@ -179,7 +169,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // POST: Activate (dar de alta -> Enabled = true)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id)

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ElSentidoDelOido.Negocio.DTOs;
+﻿using ElSentidoDelOido.Negocio.DTOs;
 
 namespace ElSentidoDelOido.Web.Models
 {

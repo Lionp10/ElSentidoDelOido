@@ -4,12 +4,10 @@
     ViewData["Title"] = "Inicio de Sesión";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // URL objetivo del formulario de contacto en la vista principal (Home#Contacto)
     var contactUrl = Url.Action("Index", "Home") + "#Contacto";
 }
 
 <style>
-    /* Estilos personalizados para el formulario de login */
     .login-container {
         min-height: 100vh;
         display: flex;
@@ -211,13 +209,11 @@
 
 <div class="login-container">
     <div class="login-card">
-        <!-- Header -->
         <div class="login-header">
             <h1><i class="bi bi-lock-fill"></i> Iniciar Sesión</h1>
             <p>Panel Administrativo - El Sentido del Oído</p>
         </div>
 
-        <!-- Mostrar errores si existen -->
         @if (ViewData.ModelState.Values.Any(x => x.Errors.Count > 0))
         {
             <div class="alert alert-danger" role="alert">
@@ -226,13 +222,11 @@
             </div>
         }
 
-        <!-- Formulario de login -->
         @using (Html.BeginForm("Login", "Auth", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3 d-none" }) @* summary adicional si se necesita *@
+            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3 d-none" }) 
 
-            <!-- Email -->
             <div class="form-group">
                 @Html.LabelFor(m => m.Email)
                 <div class="input-icon">
@@ -242,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- Contraseña -->
             <div class="form-group">
                 @Html.LabelFor(m => m.Password)
                 <div class="input-icon">
@@ -252,30 +245,24 @@
                 </div>
             </div>
 
-            <!-- Recordarme y olvide contraseña -->
             <div class="remember-forgot">
                 <div>
-                    @* Html.CheckBoxFor genera automáticamente el hidden necesario para binder booleans correctamente *@
                     @Html.CheckBoxFor(m => m.RememberMe, new { id = "rememberMe" })
                     <label for="rememberMe" style="display: inline; margin: 0;">Recuérdame</label>
                 </div>
 
-                @* Popover: al hacer click muestra mensaje y botón que redirige al formulario de contacto *@
                 <a href="#" id="forgotPasswordPopover" role="button" tabindex="0" class="text-decoration-none">
                     ¿Olvidó su contraseña?
                 </a>
             </div>
 
-            <!-- Botón de login -->
             <button type="submit" class="btn-login">
                 <i class="bi bi-box-arrow-in-right"></i> Ingresar
             </button>
         }
 
-        <!-- Opciones adicionales -->
         <div class="divider">o</div>
 
-        <!-- Pie del formulario -->
         <div class="footer-login">
             <p>¿No tienes cuenta? <a href="@contactUrl">Contacta al administrador</a></p>
         </div>
@@ -286,18 +273,16 @@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script type="text/javascript">
         $(function () {
-            // Opcional: focus inicial
             $('#Email').focus();
 
-            // Inicializar popover de Bootstrap (usa el enlace contactUrl generado en Razor)
             var contactUrl = '@contactUrl';
             var forgotEl = document.getElementById('forgotPasswordPopover');
 
             if (forgotEl && window.bootstrap) {
                 new bootstrap.Popover(forgotEl, {
                     html: true,
-                    trigger: 'focus', // se cierra al perder foco / hacer click fuera
-                    sanitize: false, // permitimos HTML simple en el contenido
+                    trigger: 'focus',
+                    sanitize: false,
                     content: function () {
                         return `<div>Si olvidaste tu contraseña ponte en contacto con un administrador.<div class="mt-2 text-end"><a class="btn btn-sm btn-primary" href="${contactUrl}">Contactar</a></div></div>`;
                     },

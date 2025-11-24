@@ -8,9 +8,7 @@ namespace ElSentidoDelOido.Negocio.Services.Interfaces
         Task<ShiftDTO?> GetByIdAsync(int id);
         Task<ShiftDTO> CreateAsync(ShiftCreateDTO dto);
         Task<ShiftDTO> UpdateAsync(ShiftDTO dto);
-        Task DeleteAsync(int id);
-        
-        // Método para paginación con filtros
+        Task DeleteAsync(int id);        
         Task<(IEnumerable<ShiftDTO> Items, int TotalCount)> GetPagedAsync(
             DateTime? fecha, 
             string? estado, 
@@ -18,12 +16,8 @@ namespace ElSentidoDelOido.Negocio.Services.Interfaces
             int? professionalId, 
             int page, 
             int pageSize);
-
-        // Nuevos métodos para aprobar y rechazar
         Task<ShiftDTO> ApproveAsync(int shiftId, int professionalId);
         Task<ShiftDTO> RejectAsync(int shiftId);
-
-        // Agregar estos métodos al interface
         Task<ShiftDTO> CancelAsync(int shiftId);
         Task<ShiftDTO> CompleteAsync(int shiftId);
     }

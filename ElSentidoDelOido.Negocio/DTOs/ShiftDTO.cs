@@ -16,8 +16,6 @@ namespace ElSentidoDelOido.Negocio.DTOs
         public int? ShiftTypeId { get; set; }
         public string? ShiftStateId { get; set; }
         public int? ProfessionalId { get; set; }
-        
-        // Propiedades navegacionales
         public string? ShiftTypeName { get; set; }
         public string? ScheduleHour { get; set; }
         public string? ProfessionalName { get; set; }

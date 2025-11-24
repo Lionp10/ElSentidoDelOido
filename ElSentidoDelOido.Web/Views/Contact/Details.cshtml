@@ -1,0 +1,256 @@
+﻿@model ElSentidoDelOido.Negocio.DTOs.ContactMessageDTO
+
+@{
+    ViewData["Title"] = "Detalle de Mensaje";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16255b;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .card-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        background: white;
+    }
+
+    .msg-card { 
+        background: white; 
+        border:1px solid #e5e7eb; 
+        border-radius:12px; 
+        padding:1rem;
+        overflow: hidden;            
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+
+    .msg-meta { color:#6b7280; font-size:0.9rem; }
+
+    .msg-card .text-muted {
+        color: #6b7280;
+        overflow-wrap: anywhere;    
+        word-break: break-word;     
+        white-space: pre-wrap;      
+        hyphens: auto;
+        max-width: 100%;
+        display: block;
+    }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .btn-primary-custom:hover {
+        background-color: #1e3a8a;
+        border-color: #1e3a8a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(22, 37, 91, 0.12);
+    }
+
+    .btn-icon-delete {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+    .btn-icon-delete:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .form-text-muted { color: #6b7280; }
+
+    .modal-confirm .modal-header {
+        border-bottom: none;
+        background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03));
+    }
+
+    .modal-confirm .modal-title {
+        color: #16255b;
+        font-weight: 700;
+    }
+
+    .modal-confirm .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-confirm .btn-danger {
+        background-color: #dc2626;
+        border-color: #dc2626;
+    }
+
+    .modal-confirm .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8 d-flex align-items-center gap-3">
+            <div class="header-icon"><i class="bi bi-envelope-open"></i></div>
+            <div>
+                <h1 class="page-title mb-0">Mensaje</h1>
+                <div class="page-subtitle small">Detalle y respuesta</div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Index", "Contact")" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver 
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="msg-card card-custom p-3">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="mb-1">@Model.FullName</h5>
+                        <div class="msg-meta">@Model.Email • @Model.Phone</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small-muted">@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                        @if (!Model.Read)
+                        {
+                            <span class="badge bg-success mt-1">No leído</span>
+                        }
+                        else if (!Model.Answered)
+                        {
+                            <span class="badge bg-warning text-dark mt-1">Leído</span>
+                        }
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="mb-3">
+                    <h6 class="fw-600">Mensaje</h6>
+                    <p class="text-muted">@Model.Message</p>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Reply))
+                {
+                    <div class="mb-3">
+                        <h6 class="fw-600">Respuesta registrada</h6>
+                        <div class="text-muted">@Model.Reply</div>
+                        <div class="small-muted mt-2">Fecha respuesta: @Model.RepliedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-custom p-3">
+                <h6 class="section-title"><i class="bi bi-reply"></i> Responder</h6>
+
+                @using (Html.BeginForm("Reply", "Contact", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Respuesta</label>
+                        <textarea name="reply" class="form-control" rows="6" required>@Model.Reply</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary-custom w-100">
+                            <i class="bi bi-send"></i> Enviar Respuesta
+                        </button>
+                    </div>
+                }
+
+                <hr />
+
+                <div>
+                    <button type="button"
+                            class="btn btn-icon-delete w-100 mt-2"
+                            id="btnOpenDeleteModal"
+                            data-id="@Model.Id"
+                            title="Eliminar Mensaje">
+                        <i class="bi bi-trash"></i> Eliminar Mensaje
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-confirm" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-circle"></i> Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">¿Seguro que deseas eliminar este mensaje?</p>
+
+                @using (Html.BeginForm("Delete", "Contact", FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteMessageId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const btn = document.getElementById('btnOpenDeleteModal');
+            const modalEl = document.getElementById('confirmDeleteModal');
+            if (!modalEl || !btn) return;
+
+            const modal = new bootstrap.Modal(modalEl);
+            const messageEl = document.getElementById('deleteMessage');
+            const idInput = document.getElementById('deleteMessageId');
+
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                idInput.value = id;
+                messageEl.textContent = `¿Confirmas eliminar este mensaje? Esta acción no se puede deshacer.`;
+                modal.show();
+            });
+        })();
+    </script>
+}

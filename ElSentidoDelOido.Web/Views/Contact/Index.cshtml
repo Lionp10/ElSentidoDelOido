@@ -1,0 +1,324 @@
+﻿@model IEnumerable<ElSentidoDelOido.Negocio.DTOs.ContactMessageDTO>
+
+@{
+    ViewData["Title"] = "Mensajes de Contacto";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #16255b;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #16255b, #1e3a8a);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: #16255b;
+        border-color: #16255b;
+        color: white;
+        font-weight: 600;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #1e3a8a;
+        border-color: #1e3a8a;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(22, 37, 91, 0.12);
+    }
+
+    .card-custom {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-header-custom {
+        background: linear-gradient(to right, #f8f9fa, #f3f4f6);
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table-header-custom th {
+        color: #16255b;
+        font-weight: 600;
+        padding: 1rem;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #374151;
+    }
+
+    .btn-icon-edit {
+        background-color: #dbeafe;
+        color: #0369a1;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon-edit:hover {
+        background-color: #0ea5e9;
+        color: white;
+    }
+
+    .btn-icon-delete {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon-delete:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-icon-markread {
+        background-color: #d1fae5;
+        color: #065f46;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon-markread:hover {
+        background-color: #059669;
+        color: white;
+    }
+
+    .btn-group-sm {
+        gap: 0.5rem;
+    }
+
+    .empty-state {
+        background: linear-gradient(135deg, rgba(22, 37, 91, 0.05), rgba(30, 58, 138, 0.05));
+        border-radius: 12px;
+        margin: 2rem 1rem;
+    }
+
+    .empty-state i {
+        font-size: 3.5rem;
+        color: #16255b;
+        opacity: 0.3;
+    }
+
+    .messages-table .msg-unread {
+        background: linear-gradient(90deg, rgba(22,37,91,0.04), rgba(6,150,105,0.02));
+        border-left: 4px solid #059669;
+    }
+
+    .msg-preview { max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .modal-confirm .modal-header {
+        border-bottom: none;
+        background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03));
+    }
+
+    .modal-confirm .modal-title {
+        color: #16255b;
+        font-weight: 700;
+    }
+
+    .modal-confirm .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-confirm .btn-danger {
+        background-color: #dc2626;
+        border-color: #dc2626;
+    }
+
+    .modal-confirm .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8 d-flex align-items-center gap-3">
+            <div class="header-icon"><i class="bi bi-envelope-open"></i></div>
+            <div>
+                <h1 class="page-title mb-0">Mensajes de Contacto</h1>
+                <div class="page-subtitle small">Mensajes no respondidos recibidos desde el formulario de contacto</div>
+            </div>
+        </div>
+
+        <div class="col-md-4 text-end">
+            @using (Html.BeginForm("MarkAllAsRead", "Contact", FormMethod.Post, new { @class = "d-inline" }))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary-custom" title="Marcar todos como leídos">
+                    <i class="bi bi-check2-all me-1"></i> Marcar todos como leídos
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card card-custom">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive messages-table">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr class="table-header-custom">
+                                <th>Remitente</th>
+                                <th>Email / Teléfono</th>
+                                <th>Mensaje</th>
+                                <th>Recibido</th>
+                                <th style="width:160px; text-align:center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model)
+                            {
+                                var rowClass = m.Read ? "" : "msg-unread";
+                                <tr class="@rowClass">
+                                    <td>
+                                        <div class="fw-600">@m.FullName</div>
+                                    </td>
+                                    <td>
+                                        <div class="small-muted">@m.Email</div>
+                                        <div class="small-muted">@m.Phone</div>
+                                    </td>
+                                    <td>
+                                        <div class="msg-preview" title="@m.Message">@m.Message</div>
+                                    </td>
+                                    <td>
+                                        @m.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                        @if (!m.Read)
+                                        {
+                                            <div><span class="badge bg-success mt-1">No leído</span></div>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="@Url.Action("Details", "Contact", new { id = m.Id })" class="btn btn-icon-edit" title="Ver / Responder">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @using (Html.BeginForm("MarkAsRead", "Contact", FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@m.Id" />
+                                                <button type="submit" class="btn btn-icon-markread" title="Marcar leído">
+                                                    <i class="bi bi-check2"></i>
+                                                </button>
+                                            }
+
+                                            <button type="button"
+                                                    class="btn btn-icon-delete btn-confirm-delete"
+                                                    data-id="@m.Id"
+                                                    data-name="@(m.FullName ?? "este mensaje")"
+                                                    title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state py-4 text-center">
+                    <i class="bi bi-envelope"></i>
+                    <div class="mt-2">No hay mensajes sin responder</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-confirm" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-circle"></i> Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">¿Seguro que deseas eliminar este mensaje?</p>
+
+                @using (Html.BeginForm("Delete", "Contact", FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteMessageId" value="" />
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modalEl = document.getElementById('confirmDeleteModal');
+            if (!modalEl) return;
+
+            const modal = new bootstrap.Modal(modalEl);
+            const messageEl = document.getElementById('deleteMessage');
+            const idInput = document.getElementById('deleteMessageId');
+
+            document.querySelectorAll('.btn-confirm-delete').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name') || 'este mensaje';
+                    idInput.value = id;
+                    messageEl.textContent = `¿Confirmas eliminar el mensaje de ${name.trim()}? Esta acción no se puede deshacer.`;
+                    modal.show();
+                });
+            });
+        })();
+    </script>
+}

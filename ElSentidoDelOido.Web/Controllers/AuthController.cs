@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
-using ElSentidoDelOido.Negocio.DTOs;
-using System.Threading.Tasks;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using System;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
@@ -20,7 +18,6 @@ namespace ElSentidoDelOido.Web.Controllers
             _userService = userService;
         }
 
-        // GET: /Auth/Index
         public IActionResult Index()
         {
             if (User?.Identity?.IsAuthenticated == true)
@@ -66,7 +63,7 @@ namespace ElSentidoDelOido.Web.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 
-            return RedirectToAction("Index", "User");
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]

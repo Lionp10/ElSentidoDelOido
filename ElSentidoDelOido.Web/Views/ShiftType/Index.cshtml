@@ -165,7 +165,6 @@
             font-weight: 600;
         }
 
-    /* Modal custom (igual estilo que User) */
     .modal-confirm .modal-header {
         border-bottom: none;
         background: linear-gradient(135deg, rgba(22,37,91,0.05), rgba(30,58,138,0.03));
@@ -193,7 +192,6 @@
 </style>
 
 <div class="container-fluid py-5">
-    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="d-flex align-items-center gap-3 mb-3">
@@ -213,7 +211,6 @@
         </div>
     </div>
 
-    <!-- Alert Messages -->
     @if (TempData["Mensaje"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -222,7 +219,6 @@
         </div>
     }
 
-    <!-- ShiftTypes Table -->
     <div class="card card-custom">
         <div class="card-body p-0">
             @if (Model.Any())
@@ -266,7 +262,6 @@
 
                                             @if (item.Enabled.GetValueOrDefault())
                                             {
-                                                <!-- botón que abre modal para desactivar -->
                                                 <button type="button"
                                                         class="btn btn-icon-delete btn-confirm-action"
                                                         data-id="@item.Id"
@@ -278,7 +273,6 @@
                                             }
                                             else
                                             {
-                                                <!-- botón que abre modal para reactivar -->
                                                 <button type="button"
                                                         class="btn btn-icon-reactivate btn-confirm-action"
                                                         data-id="@item.Id"
@@ -313,7 +307,6 @@
     </div>
 </div>
 
-<!-- Confirm Action Modal (activar / desactivar) -->
 <div class="modal fade modal-confirm" id="confirmActionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -350,7 +343,6 @@
             const actionForm = document.getElementById('actionForm');
             const confirmBtn = document.getElementById('actionConfirmBtn');
 
-            // Rutas de acciones en ShiftTypeController
             const deactivateUrl = '@Url.Action("Delete", "ShiftType")';
             const reactivateUrl = '@Url.Action("Reactivate", "ShiftType")';
 

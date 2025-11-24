@@ -19,13 +19,11 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(model);
         }
 
-        // GET: Holidays/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Holidays/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(HolidaysCreateDTO dto)
@@ -51,7 +49,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // GET: Holidays/Edit/5
         public async Task<IActionResult> Edi0t(int id)
         {
             var existing = await _service.GetByIdAsync(id);
@@ -67,7 +64,6 @@ namespace ElSentidoDelOido.Web.Controllers
             return View(dto);
         }
 
-        // POST: Holidays/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(HolidaysUpdateDTO dto)
@@ -97,7 +93,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        // POST: Holidays/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

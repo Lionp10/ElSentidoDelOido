@@ -33,7 +33,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
 
         public async Task<ShiftDTO> CreateAsync(ShiftCreateDTO dto)
         {
-            // Validaciones
             if (dto.Date.Date < DateTime.Today)
             {
                 throw new InvalidOperationException("No se pueden crear turnos para fechas pasadas.");
@@ -44,14 +43,12 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
                 throw new ArgumentException("La hora es obligatoria.", nameof(dto.Hour));
             }
 
-            // Buscar el schedule correspondiente
             var schedule = await _repository.GetScheduleByHourAndTypeAsync(dto.Hour.Trim(), dto.TipoTurnoId);
             if (schedule == null)
             {
                 throw new InvalidOperationException("El horario seleccionado no existe para este tipo de turno.");
             }
 
-            // Crear la entidad Shift
             var entity = new Shift
             {
                 FirstName = dto.FirstName?.Trim(),
@@ -62,8 +59,8 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
                 ScheduleId = schedule.Id,
                 Message = string.IsNullOrWhiteSpace(dto.Message) ? null : dto.Message.Trim(),
                 ShiftTypeId = dto.TipoTurnoId,
-                ShiftStateId = ShiftStateEnum.Pendiente.ToString(), // Por defecto "Pendiente"
-                ProfessionalId = null // Se asignará posteriormente por el administrador
+                ShiftStateId = ShiftStateEnum.Pendiente.ToString(), 
+                ProfessionalId = null 
             };
 
             var created = await _repository.CreateAsync(entity);
@@ -88,7 +85,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             await _repository.DeleteAsync(id);
         }
 
-        // Nuevo método para paginación con filtros
         public async Task<(IEnumerable<ShiftDTO> Items, int TotalCount)> GetPagedAsync(
             DateTime? fecha,
             string? estado,
@@ -102,7 +98,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             return (dtos, totalCount);
         }
 
-        // Nuevo método para aprobar turno
         public async Task<ShiftDTO> ApproveAsync(int shiftId, int professionalId)
         {
             var shift = await _repository.GetByIdAsync(shiftId);
@@ -123,7 +118,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             return _mapper.Map<ShiftDTO>(updated);
         }
 
-        // Nuevo método para rechazar turno
         public async Task<ShiftDTO> RejectAsync(int shiftId)
         {
             var shift = await _repository.GetByIdAsync(shiftId);
@@ -143,9 +137,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             return _mapper.Map<ShiftDTO>(updated);
         }
 
-        /// <summary>
-        /// Cancelar un turno confirmado
-        /// </summary>
         public async Task<ShiftDTO> CancelAsync(int shiftId)
         {
             var shift = await _repository.GetByIdAsync(shiftId);
@@ -165,9 +156,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             return _mapper.Map<ShiftDTO>(updated);
         }
 
-        /// <summary>
-        /// Marcar un turno como culminado
-        /// </summary>
         public async Task<ShiftDTO> CompleteAsync(int shiftId)
         {
             var shift = await _repository.GetByIdAsync(shiftId);
@@ -181,7 +169,6 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
                 throw new InvalidOperationException("Solo se pueden culminar turnos que estén confirmados.");
             }
 
-            // Opcional: Validar que la fecha del turno ya haya pasado
             if (shift.Date.HasValue && shift.Date.Value.Date > DateTime.Today)
             {
                 throw new InvalidOperationException("No se puede culminar un turno futuro.");
