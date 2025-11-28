@@ -63,7 +63,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 
-            // Redirigir según el rol del usuario
             var role = user.RoleName ?? "User";
             if (string.Equals(role, "Admin".ToUpper(), StringComparison.OrdinalIgnoreCase))
             {
@@ -71,7 +70,6 @@ namespace ElSentidoDelOido.Web.Controllers
             }
             else
             {
-                // Moderators y otros roles van directamente a Turnos
                 return RedirectToAction("Main", "Shift");
             }
         }
