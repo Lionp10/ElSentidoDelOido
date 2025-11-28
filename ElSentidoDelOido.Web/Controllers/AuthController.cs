@@ -63,7 +63,17 @@ namespace ElSentidoDelOido.Web.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 
-            return RedirectToAction("Index", "Dashboard");
+            // Redirigir según el rol del usuario
+            var role = user.RoleName ?? "User";
+            if (string.Equals(role, "Admin".ToUpper(), StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+            else
+            {
+                // Moderators y otros roles van directamente a Turnos
+                return RedirectToAction("Main", "Shift");
+            }
         }
 
         [HttpPost]
@@ -73,6 +83,12 @@ namespace ElSentidoDelOido.Web.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Auth");
+        }
+
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }

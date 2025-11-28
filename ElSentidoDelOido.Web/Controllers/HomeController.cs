@@ -10,11 +10,16 @@ namespace ElSentidoDelOido.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IContactMessageService _contactService;
+        private readonly IGoogleRecaptchaService _recaptchaService;
 
-        public HomeController(ILogger<HomeController> logger, IContactMessageService contactService)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            IContactMessageService contactService,
+            IGoogleRecaptchaService recaptchaService)
         {
             _logger = logger;
             _contactService = contactService;
+            _recaptchaService = recaptchaService;
         }
 
         public IActionResult Index()
@@ -29,6 +34,15 @@ namespace ElSentidoDelOido.Web.Controllers
             if (!ModelState.IsValid)
             {
                 TempData["FormError"] = "Por favor corrige los errores del formulario.";
+                return RedirectToAction("Index");
+            }
+
+            // Verificar reCAPTCHA
+            var isRecaptchaValid = await _recaptchaService.VerifyTokenAsync(model.RecaptchaToken);
+            if (!isRecaptchaValid)
+            {
+                _logger.LogWarning("Intento de envío de formulario con reCAPTCHA inválido desde {IP}", HttpContext.Connection.RemoteIpAddress);
+                TempData["FormError"] = "Verificación de seguridad fallida. Por favor, intenta nuevamente.";
                 return RedirectToAction("Index");
             }
 

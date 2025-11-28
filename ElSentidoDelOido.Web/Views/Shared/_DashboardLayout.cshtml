@@ -405,6 +405,10 @@
 
         var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
         if (string.IsNullOrWhiteSpace(role)) { role = "Usuario"; }
+        
+        // Determinar si el usuario es Admin o Moderator
+        var isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+        var isModerator = string.Equals(role, "Moderator", StringComparison.OrdinalIgnoreCase);
     }
 
     <aside class="sidebar" id="sidebar" aria-label="Barra lateral de navegación">
@@ -416,17 +420,28 @@
         </div>
 
         <ul class="sidebar-nav" id="sidebarNav">
-            <li class="sidebar-section">Panel Principal</li>
-
-            <li><a href="@Url.Action("Index", "Dashboard")" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a></li>
+            @if (isAdmin)
+            {
+                <li class="sidebar-section">Panel Principal</li>
+                <li><a href="@Url.Action("Index", "Dashboard")" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a></li>
+            }
 
             <li class="sidebar-section">Gestión</li>
 
-            <li><a href="@Url.Action("Index", "User")" class="nav-link"><i class="bi bi-people-fill"></i><span>Usuarios</span></a></li>
+            @if (isAdmin)
+            {
+                <li><a href="@Url.Action("Index", "User")" class="nav-link"><i class="bi bi-people"></i><span>Usuarios</span></a></li>
+            }
+            
             <li><a href="@Url.Action("Main", "Shift")" class="nav-link"><i class="bi bi-calendar2-check"></i><span>Turnos</span></a></li>
-            <li><a href="@Url.Action("Index", "ShiftType")" class="nav-link"><i class="bi bi-bookmark-check"></i><span>Tipos de Turno</span></a></li>
-            <li><a href="@Url.Action("Index", "ShiftSchedule")" class="nav-link"><i class="bi bi-clock-fill"></i><span>Horarios</span></a></li>
-            <li><a href="@Url.Action("Index", "Professional")" class="nav-link"><i class="bi bi-person-badge-fill"></i><span>Profesionales</span></a></li>
+            
+            @if (isAdmin)
+            {
+                <li><a href="@Url.Action("Index", "ShiftType")" class="nav-link"><i class="bi bi-bookmark-check"></i><span>Tipos de Turno</span></a></li>
+                <li><a href="@Url.Action("Index", "ShiftSchedule")" class="nav-link"><i class="bi bi-clock"></i><span>Horarios</span></a></li>
+                <li><a href="@Url.Action("Index", "Professional")" class="nav-link"><i class="bi bi-person-badge"></i><span>Profesionales</span></a></li>
+            }
+            
             <li><a href="@Url.Action("Index", "Holidays")" class="nav-link"><i class="bi bi-calendar2-x"></i><span>Anular días</span></a></li>
             <li><a href="@Url.Action("Index", "Contact")" class="nav-link"><i class="bi bi-envelope-open"></i><span>Mensajes</span></a></li>
         </ul>

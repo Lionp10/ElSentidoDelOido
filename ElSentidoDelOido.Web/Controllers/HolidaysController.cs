@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
-using ElSentidoDelOido.Negocio.DTOs;
+using ElSentidoDelOido.Web.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
+    [Authorize]
     public class HolidaysController : Controller
     {
         private readonly IHolidaysService _service;

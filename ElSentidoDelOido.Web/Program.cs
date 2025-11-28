@@ -4,9 +4,11 @@ using ElSentidoDelOido.Datos.Repositories.Interfaces;
 using ElSentidoDelOido.Negocio.Helpers;
 using ElSentidoDelOido.Negocio.Services.Implementations;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
+using ElSentidoDelOido.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,11 +58,15 @@ builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+
+builder.Services.AddHttpClient<IGoogleRecaptchaService, GoogleRecaptchaService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var keysFolder = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "DataProtection-Keys"));

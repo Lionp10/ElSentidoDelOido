@@ -4,6 +4,9 @@
 @{
     ViewData["Title"] = "Gestión de Turnos";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    
+    var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+    var isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
 <style>
@@ -217,12 +220,16 @@
                         <a href="@Url.Action("Index")" class="btn btn-primary-custom w-100 mb-2">
                             <i class="bi bi-plus-lg"></i> Crear Turno
                         </a>
-                        <a href="@Url.Action("Index", "ShiftType")" class="btn btn-outline-secondary w-100 mb-2">
-                            Tipos de Turno
-                        </a>
-                        <a href="@Url.Action("Index", "Professional")" class="btn btn-outline-secondary w-100">
-                            Profesionales
-                        </a>
+                        
+                        @if (isAdmin)
+                        {
+                            <a href="@Url.Action("Index", "ShiftType")" class="btn btn-outline-secondary w-100 mb-2">
+                                Tipos de Turno
+                            </a>
+                            <a href="@Url.Action("Index", "Professional")" class="btn btn-outline-secondary w-100">
+                                Profesionales
+                            </a>
+                        }
                     </div>
                 </div>
 
@@ -522,12 +529,21 @@
             </div>
             <div class="modal-body">
                 <p id="rejectMessage">¿Confirmas rechazar este turno?</p>
-                <p class="text-muted small">Esta acción cambiará el estado del turno a "Rechazado" y no se puede deshacer.</p>
+                <p class="text-muted small">Esta acción cambiará el estado del turno a "Rechazado" y enviará una notificación al paciente.</p>
+                
+                <div class="mb-3 mt-3">
+                    <label for="rejectionReasonTextarea" class="form-label">Motivo del rechazo <span class="text-danger">*</span></label>
+                    <textarea id="rejectionReasonTextarea" class="form-control" rows="4" placeholder="Explica el motivo del rechazo para informar al paciente..."></textarea>
+                    <div class="text-danger small mt-1" id="rejectionReasonError" style="display:none;">
+                        Por favor, proporciona un motivo del rechazo.
+                    </div>
+                </div>
                 
                 @using (Html.BeginForm("Reject", "Shift", FormMethod.Post, new { id = "rejectForm" }))
                 {
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" id="rejectShiftId" value="" />
+                    <input type="hidden" name="rejectionReason" id="rejectionReasonInput" value="" />
                     <div class="d-flex justify-content-end gap-2 mt-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" id="rejectConfirmBtn" class="btn btn-danger">Rechazar Turno</button>
@@ -627,6 +643,10 @@
             const rejectModal = rejectModalEl ? new bootstrap.Modal(rejectModalEl) : null;
             const rejectMsg = document.getElementById('rejectMessage');
             const rejectIdInput = document.getElementById('rejectShiftId');
+            const rejectionReasonTextarea = document.getElementById('rejectionReasonTextarea');
+            const rejectionReasonInput = document.getElementById('rejectionReasonInput');
+            const rejectionReasonError = document.getElementById('rejectionReasonError');
+            const rejectForm = document.getElementById('rejectForm');
 
             const deleteModalEl = document.getElementById('confirmDeleteModal');
             const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
@@ -674,9 +694,48 @@
                     if (!rejectIdInput) return;
                     rejectIdInput.value = id;
                     rejectMsg.textContent = `¿Confirmas rechazar el turno de ${patient}?`;
+                    
+                    // Limpiar textarea y errores
+                    if (rejectionReasonTextarea) rejectionReasonTextarea.value = '';
+                    if (rejectionReasonError) rejectionReasonError.style.display = 'none';
+                    
                     if (rejectModal) rejectModal.show();
                 });
             });
+
+            // Validación del formulario de rechazo
+            if (rejectForm) {
+                rejectForm.addEventListener('submit', function(e) {
+                    const reason = rejectionReasonTextarea ? rejectionReasonTextarea.value.trim() : '';
+                    
+                    if (!reason) {
+                        e.preventDefault();
+                        if (rejectionReasonError) {
+                            rejectionReasonError.style.display = 'block';
+                        }
+                        if (rejectionReasonTextarea) {
+                            rejectionReasonTextarea.focus();
+                        }
+                        return false;
+                    }
+                    
+                    // Copiar el motivo al input oculto
+                    if (rejectionReasonInput) {
+                        rejectionReasonInput.value = reason;
+                    }
+                    
+                    return true;
+                });
+            }
+
+            // Ocultar error al escribir
+            if (rejectionReasonTextarea) {
+                rejectionReasonTextarea.addEventListener('input', function() {
+                    if (this.value.trim() && rejectionReasonError) {
+                        rejectionReasonError.style.display = 'none';
+                    }
+                });
+            }
 
             document.querySelectorAll('.btn-delete-trigger').forEach(btn => {
                 btn.addEventListener('click', function (e) {

@@ -1,9 +1,13 @@
 ﻿using ElSentidoDelOido.Datos.Entities.Enums;
 using ElSentidoDelOido.Negocio.DTOs;
+using ElSentidoDelOido.Negocio.Helpers;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
 using ElSentidoDelOido.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Encodings.Web;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
@@ -16,19 +20,31 @@ namespace ElSentidoDelOido.Web.Controllers
         private readonly IHolidaysService _holidaysService;
         private readonly IShiftService _shiftService;
         private readonly IProfessionalService _professional_service;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
+        private readonly IRazorViewToStringRenderer _viewRenderer;
 
         public ShiftController(
             IShiftTypeService shiftTypeService, 
             IShiftScheduleService shiftScheduleService, 
             IHolidaysService holidaysService,
             IShiftService shiftService,
-            IProfessionalService professionalService)
+            IProfessionalService professionalService,
+            IEmailService emailService,
+            IRazorViewToStringRenderer viewRenderer,
+            IConfiguration configuration,
+            IWebHostEnvironment env)
         {
             _shiftTypeService = shiftTypeService;
             _shiftScheduleService = shiftScheduleService;
             _holidaysService = holidaysService;
             _shiftService = shiftService;
             _professional_service = professionalService;
+            _emailService = emailService;
+            _viewRenderer = viewRenderer;
+            _configuration = configuration;
+            _env = env;
         }
 
         #endregion
@@ -310,6 +326,110 @@ namespace ElSentidoDelOido.Web.Controllers
             try
             {
                 await _shiftService.ApproveAsync(id, professionalId);
+
+                var shift = await _shiftService.GetByIdAsync(id);
+                var professionals = await _professional_service.GetAllAsync();
+                var profesional = professionals.FirstOrDefault(p => p.Id == professionalId);
+
+                if (shift != null && !string.IsNullOrWhiteSpace(shift.Email))
+                {
+                    try
+                    {
+                        var configuredBase = _configuration["App:BaseUrl"];
+                        string baseUrl;
+                        
+                        if (!string.IsNullOrWhiteSpace(configuredBase))
+                        {
+                            baseUrl = configuredBase.TrimEnd('/');
+                        }
+                        else
+                        {
+                            var scheme = Request.Scheme ?? "https";
+                            var host = Request.Host.HasValue ? Request.Host.Value : "localhost";
+                            baseUrl = $"{scheme}://{host}";
+                        }
+
+                        var clinicAddress = profesional?.Address ?? _configuration["Clinic:Address"] ?? "Belgrano 1212, Arequito, Santa Fe";
+                        var patientFullName = $"{shift.FirstName} {shift.LastName}".Trim();
+                        var safePatientName = HtmlEncoder.Default.Encode(patientFullName);
+                        var safeProfessionalName = HtmlEncoder.Default.Encode(
+                            profesional != null ? $"{profesional.FirstName} {profesional.LastName}".Trim() : "Profesional asignado");
+                        var safeType = HtmlEncoder.Default.Encode(shift.ShiftTypeName ?? "-");
+                        var safeDate = shift.Date.HasValue ? shift.Date.Value.ToString("dd/MM/yyyy") : "-";
+                        var safeHour = HtmlEncoder.Default.Encode(shift.ScheduleHour ?? "-");
+                        var patientNoteHtml = HtmlEncoder.Default.Encode(shift.Message ?? string.Empty).Replace("\n", "<br/>");
+
+                        var subject = $"Turno confirmado - {safeDate} {safeHour}";
+
+                        var emailModel = new ShiftEmailViewModel
+                        {
+                            PatientName = safePatientName,
+                            Date = safeDate,
+                            Hour = safeHour,
+                            ShiftType = safeType,
+                            Professional = safeProfessionalName,
+                            ClinicAddress = HtmlEncoder.Default.Encode(clinicAddress),
+                            PatientNote = patientNoteHtml,
+                            BaseUrl = baseUrl,
+                            LogoDataUri = "cid:logo"
+                        };
+
+                        var body = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/ShiftApproved.cshtml", emailModel);
+
+                        // Crear mensaje con logo adjunto
+                        var message = new MimeMessage();
+                        message.From.Add(new MailboxAddress(
+                            _configuration["SmtpProfiles:notifications:FromName"] ?? _configuration["Smtp:FromName"] ?? "El Sentido del Oído",
+                            _configuration["SmtpProfiles:notifications:FromEmail"] ?? _configuration["Smtp:FromEmail"] ?? "info@elsentidodeloido.com"));
+                        message.To.Add(new MailboxAddress(patientFullName, shift.Email));
+                        message.Subject = subject;
+
+                        var builder = new BodyBuilder { HtmlBody = body };
+
+                        // Adjuntar el logo con Content-ID
+                        var webRoot = _env.WebRootPath ?? string.Empty;
+                        var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
+                        
+                        if (!System.IO.File.Exists(logoPath))
+                        {
+                            logoPath = Path.Combine(webRoot, "Images", "LogoOido.webp");
+                        }
+
+                        if (System.IO.File.Exists(logoPath))
+                        {
+                            var logo = builder.LinkedResources.Add(logoPath);
+                            logo.ContentId = "logo";
+                        }
+
+                        message.Body = builder.ToMessageBody();
+
+                        // Enviar usando SMTP configurado para 'notifications'
+                        var smtpHost = _configuration["SmtpProfiles:notifications:Host"] ?? _configuration["Smtp:Host"];
+                        var smtpPortStr = _configuration["SmtpProfiles:notifications:Port"] ?? _configuration["Smtp:Port"] ?? "587";
+                        var smtpPort = int.Parse(smtpPortStr);
+                        var smtpUser = _configuration["SmtpProfiles:notifications:User"] ?? _configuration["Smtp:User"];
+                        var smtpPass = _configuration["SmtpProfiles:notifications:Pass"] ?? _configuration["Smtp:Pass"];
+                        var useSslStr = _configuration["SmtpProfiles:notifications:UseSsl"] ?? _configuration["Smtp:UseSsl"] ?? "false";
+                        var useSsl = bool.Parse(useSslStr);
+
+                        using var client = new SmtpClient();
+                        
+                        // Usar SSL o StartTLS según configuración
+                        var secureSocketOptions = useSsl && smtpPort == 465 
+                            ? MailKit.Security.SecureSocketOptions.SslOnConnect 
+                            : MailKit.Security.SecureSocketOptions.StartTls;
+                        
+                        await client.ConnectAsync(smtpHost, smtpPort, secureSocketOptions);
+                        await client.AuthenticateAsync(smtpUser, smtpPass);
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                    }
+                    catch (Exception mailEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error al enviar email de confirmación: {mailEx}");
+                    }
+                }
+
                 TempData["Mensaje"] = "Turno aprobado y profesional asignado correctamente.";
             }
             catch (Exception ex)
@@ -323,11 +443,106 @@ namespace ElSentidoDelOido.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Reject(int id)
+        public async Task<IActionResult> Reject(int id, string rejectionReason)
         {
             try
             {
                 await _shiftService.RejectAsync(id);
+
+                var shift = await _shiftService.GetByIdAsync(id);
+
+                if (shift != null && !string.IsNullOrWhiteSpace(shift.Email))
+                {
+                    try
+                    {
+                        var configuredBase = _configuration["App:BaseUrl"];
+                        string baseUrl;
+                        
+                        if (!string.IsNullOrWhiteSpace(configuredBase))
+                        {
+                            baseUrl = configuredBase.TrimEnd('/');
+                        }
+                        else
+                        {
+                            var scheme = Request.Scheme ?? "https";
+                            var host = Request.Host.HasValue ? Request.Host.Value : "localhost";
+                            baseUrl = $"{scheme}://{host}";
+                        }
+
+                        var clinicAddress = _configuration["Clinic:Address"] ?? "Belgrano 1212, Arequito, Santa Fe";
+                        var patientFullName = $"{shift.FirstName} {shift.LastName}".Trim();
+                        var safePatientName = HtmlEncoder.Default.Encode(patientFullName);
+                        var safeType = HtmlEncoder.Default.Encode(shift.ShiftTypeName ?? "-");
+                        var safeDate = shift.Date.HasValue ? shift.Date.Value.ToString("dd/MM/yyyy") : "-";
+                        var safeHour = HtmlEncoder.Default.Encode(shift.ScheduleHour ?? "-");
+                        var safeRejectionReason = HtmlEncoder.Default.Encode(rejectionReason ?? "No se especificó un motivo").Replace("\n", "<br/>");
+
+                        var subject = $"Turno rechazado - {safeDate} {safeHour}";
+
+                        var emailModel = new ShiftRejectedEmailViewModel
+                        {
+                            PatientName = safePatientName,
+                            Date = safeDate,
+                            Hour = safeHour,
+                            ShiftType = safeType,
+                            RejectionReason = safeRejectionReason,
+                            ClinicAddress = HtmlEncoder.Default.Encode(clinicAddress),
+                            BaseUrl = baseUrl,
+                            LogoDataUri = "cid:logo"
+                        };
+
+                        var body = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/ShiftRejected.cshtml", emailModel);
+
+                        var message = new MimeMessage();
+                        message.From.Add(new MailboxAddress(
+                            _configuration["SmtpProfiles:notifications:FromName"] ?? _configuration["Smtp:FromName"] ?? "El Sentido del Oído",
+                            _configuration["SmtpProfiles:notifications:FromEmail"] ?? _configuration["Smtp:FromEmail"] ?? "info@elsentidodeloido.com"));
+                        message.To.Add(new MailboxAddress(patientFullName, shift.Email));
+                        message.Subject = subject;
+
+                        var builder = new BodyBuilder { HtmlBody = body };
+
+                        var webRoot = _env.WebRootPath ?? string.Empty;
+                        var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
+                        
+                        if (!System.IO.File.Exists(logoPath))
+                        {
+                            logoPath = Path.Combine(webRoot, "Images", "LogoOido.webp");
+                        }
+
+                        if (System.IO.File.Exists(logoPath))
+                        {
+                            var logo = builder.LinkedResources.Add(logoPath);
+                            logo.ContentId = "logo";
+                        }
+
+                        message.Body = builder.ToMessageBody();
+
+                        var smtpHost = _configuration["SmtpProfiles:notifications:Host"] ?? _configuration["Smtp:Host"];
+                        var smtpPortStr = _configuration["SmtpProfiles:notifications:Port"] ?? _configuration["Smtp:Port"] ?? "587";
+                        var smtpPort = int.Parse(smtpPortStr);
+                        var smtpUser = _configuration["SmtpProfiles:notifications:User"] ?? _configuration["Smtp:User"];
+                        var smtpPass = _configuration["SmtpProfiles:notifications:Pass"] ?? _configuration["Smtp:Pass"];
+                        var useSslStr = _configuration["SmtpProfiles:notifications:UseSsl"] ?? _configuration["Smtp:UseSsl"] ?? "false";
+                        var useSsl = bool.Parse(useSslStr);
+
+                        using var client = new SmtpClient();
+                        
+                        var secureSocketOptions = useSsl && smtpPort == 465 
+                            ? MailKit.Security.SecureSocketOptions.SslOnConnect 
+                            : MailKit.Security.SecureSocketOptions.StartTls;
+                        
+                        await client.ConnectAsync(smtpHost, smtpPort, secureSocketOptions);
+                        await client.AuthenticateAsync(smtpUser, smtpPass);
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                    }
+                    catch (Exception mailEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error al enviar email de rechazo: {mailEx}");
+                    }
+                }
+
                 TempData["Mensaje"] = "Turno rechazado correctamente.";
             }
             catch (Exception ex)
@@ -372,6 +587,47 @@ namespace ElSentidoDelOido.Web.Controllers
             }
 
             return RedirectToAction(nameof(Main));
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private string? GetLogoDataUri()
+        {
+            try
+            {
+                var webRoot = _env.WebRootPath ?? string.Empty;
+                var pngPath = Path.Combine(webRoot, "Images", "LogoOido.png");
+                var webpPath = Path.Combine(webRoot, "Images", "LogoOido.webp");
+
+                string? path = null;
+                string mimeType;
+
+                if (System.IO.File.Exists(pngPath))
+                {
+                    path = pngPath;
+                    mimeType = "image/png";
+                }
+                else if (System.IO.File.Exists(webpPath))
+                {
+                    path = webpPath;
+                    mimeType = "image/webp";
+                }
+                else
+                {
+                    return null;
+                }
+
+                var bytes = System.IO.File.ReadAllBytes(path);
+                var base64 = Convert.ToBase64String(bytes);
+                return $"data:{mimeType};base64,{base64}";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"No se pudo leer logo para data-uri: {ex}");
+                return null;
+            }
         }
 
         #endregion

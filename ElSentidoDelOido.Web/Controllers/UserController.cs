@@ -1,5 +1,6 @@
 ﻿using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
+using ElSentidoDelOido.Web.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using System.Security.Claims;
 namespace ElSentidoDelOido.Web.Controllers
 {
     [Authorize]
+    [AdminOnly]
     public class UserController : Controller
     {
         private readonly IUserService _userService;

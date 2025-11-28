@@ -3,6 +3,10 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@inject IConfiguration Configuration
+
+<script src="https://www.google.com/recaptcha/api.js?render=@Configuration["GoogleReCaptcha:SiteKey"]"></script>
+
 <style>
     .hero-content {
         padding: 3rem 0;
@@ -38,7 +42,7 @@
     }
 
         .info-box a {
-            color: #f5f7fb; 
+            color: #f5f7fb;
             font-weight: 600;
             text-decoration: underline;
         }
@@ -51,19 +55,19 @@
 
         .info-box p.small,
         .info-box .contact-item .mb-0 {
-            color: #e6eef9; 
-            opacity: 1; 
+            color: #e6eef9;
+            opacity: 1;
         }
 
         .info-box .contact-item a {
             display: inline-block;
             margin-top: 4px;
-            color: #f5f7fb; 
+            color: #f5f7fb;
             font-weight: 600;
         }
 
         .info-box .contact-item i {
-            color: #f0f5fb; 
+            color: #f0f5fb;
         }
 
     .char-counter {
@@ -201,7 +205,7 @@
                     <i class="bi bi-envelope fs-5 me-3"></i>
                     <div>
                         <p class="mb-0 small opacity-75">Email</p>
-                        <a href="mailto:elsentidodeloido@gmail.com">elsentidodeloido@gmail.com</a>
+                        <a href="mailto:elsentidodeloido@@gmail.com">elsentidodeloido@@gmail.com</a>
                     </div>
                 </div>
 
@@ -252,6 +256,8 @@
                 {
                     @Html.AntiForgeryToken()
 
+                    <input type="hidden" id="recaptchaToken" name="RecaptchaToken" />
+
                     <div class="mb-3">
                         <label for="nombreCompleto" class="form-label">Nombre Completo</label>
                         <div class="input-group">
@@ -282,7 +288,16 @@
                         <div id="mensajeCounter" class="form-text text-end char-counter">0/500</div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Este sitio está protegido por reCAPTCHA y se aplican la
+                            <a href="https://policies.google.com/privacy" target="_blank">Política de Privacidad</a> y los
+                            <a href="https://policies.google.com/terms" target="_blank">Términos de Servicio</a> de Google.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
                         <i class="bi bi-send"></i> Enviar Mensaje
                     </button>
                 }
@@ -424,65 +439,85 @@
 
     <script>
         (function ($) {
+            var siteKey = '@Configuration["GoogleReCaptcha:SiteKey"]';
+
             $('#contactForm').on('submit', function (e) {
                 e.preventDefault();
 
                 var $form = $(this);
-                var url = $form.attr('action') || window.location.href;
-                var data = $form.serialize();
+                var $submitBtn = $('#submitBtn');
 
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    data: data,
-                    dataType: 'html',
-                    success: function (response) {
-                        var $resp = $('<div>').html(response);
-                        var successAlert = $resp.find('.alert.alert-success').first();
-                        var errorAlert = $resp.find('.alert.alert-danger').first();
+                $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Enviando...');
 
-                        if (successAlert.length) {
-                            var msg = successAlert.text().trim() || 'Mensaje enviado correctamente.';
-                            $('#contactResultMessage').text(msg);
-                            var modal = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
-                            modal.show();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute(siteKey, {action: 'contact_form'}).then(function(token) {
+                        $('#recaptchaToken').val(token);
 
-                            $('#contactResultOk').off('click').on('click', function () {
-                                modal.hide();
-                                window.location.reload();
-                            });
-                        } else if (errorAlert.length) {
-                            var err = errorAlert.text().trim() || 'Ocurrió un error al enviar el mensaje.';
-                            $('#contactResultMessage').text(err);
-                            var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
-                            modalErr.show();
-                            $('#contactResultOk').off('click').on('click', function () {
-                                modalErr.hide();
-                            });
-                        } else {
-                            $('#contactResultMessage').text('Mensaje enviado correctamente. Gracias.');
-                            var modalDef = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
-                            modalDef.show();
-                            $('#contactResultOk').off('click').on('click', function () {
-                                modalDef.hide();
-                                window.location.reload();
-                            });
-                        }
-                    },
-                    error: function (xhr, status, err) {
-                        var text = 'Error al enviar el mensaje. Intenta nuevamente.';
-                        if (xhr && xhr.responseText) {
-                            var $r = $('<div>').html(xhr.responseText);
-                            var serverMsg = $r.find('.alert.alert-danger').text().trim();
-                            if (serverMsg) text = serverMsg;
-                        }
-                        $('#contactResultMessage').text(text);
+                        var url = $form.attr('action') || window.location.href;
+                        var data = $form.serialize();
+
+                        $.ajax({
+                            url: url,
+                            method: 'POST',
+                            data: data,
+                            dataType: 'html',
+                            success: function (response) {
+                                var $resp = $('<div>').html(response);
+                                var successAlert = $resp.find('.alert.alert-success').first();
+                                var errorAlert = $resp.find('.alert.alert-danger').first();
+
+                                if (successAlert.length) {
+                                    var msg = successAlert.text().trim() || 'Mensaje enviado correctamente.';
+                                    $('#contactResultMessage').text(msg);
+                                    var modal = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                                    modal.show();
+
+                                    $('#contactResultOk').off('click').on('click', function () {
+                                        modal.hide();
+                                        window.location.reload();
+                                    });
+                                } else if (errorAlert.length) {
+                                    var err = errorAlert.text().trim() || 'Ocurrió un error al enviar el mensaje.';
+                                    $('#contactResultMessage').text(err);
+                                    var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                                    modalErr.show();
+                                    $('#contactResultOk').off('click').on('click', function () {
+                                        modalErr.hide();
+                                        $submitBtn.prop('disabled', false).html('<i class="bi bi-send"></i> Enviar Mensaje');
+                                    });
+                                } else {
+                                    $('#contactResultMessage').text('Mensaje enviado correctamente. Gracias.');
+                                    var modalDef = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                                    modalDef.show();
+                                    $('#contactResultOk').off('click').on('click', function () {
+                                        modalDef.hide();
+                                        window.location.reload();
+                                    });
+                                }
+                            },
+                            error: function (xhr, status, err) {
+                                var text = 'Error al enviar el mensaje. Intenta nuevamente.';
+                                if (xhr && xhr.responseText) {
+                                    var $r = $('<div>').html(xhr.responseText);
+                                    var serverMsg = $r.find('.alert.alert-danger').text().trim();
+                                    if (serverMsg) text = serverMsg;
+                                }
+                                $('#contactResultMessage').text(text);
+                                var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
+                                modalErr.show();
+                                $('#contactResultOk').off('click').on('click', function () {
+                                    modalErr.hide();
+                                    $submitBtn.prop('disabled', false).html('<i class="bi bi-send"></i> Enviar Mensaje');
+                                });
+                            }
+                        });
+                    }).catch(function(error) {
+                        console.error('Error de reCAPTCHA:', error);
+                        $('#contactResultMessage').text('Error de verificación de seguridad. Por favor, recarga la página e intenta nuevamente.');
                         var modalErr = new bootstrap.Modal(document.getElementById('contactResultModal'), { keyboard: true });
                         modalErr.show();
-                        $('#contactResultOk').off('click').on('click', function () {
-                            modalErr.hide();
-                        });
-                    }
+                        $submitBtn.prop('disabled', false).html('<i class="bi bi-send"></i> Enviar Mensaje');
+                    });
                 });
             });
         })(jQuery);

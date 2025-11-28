@@ -1,0 +1,86 @@
+﻿@model ElSentidoDelOido.Web.Models.ShiftRejectedEmailViewModel
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Turno rechazado</title>
+</head>
+<body style="font-family: Arial, Helvetica, sans-serif; background:#f6f8fb; margin:0; padding:16px; color:#374151;">
+    <div style="max-width:700px; margin:0 auto;">
+        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;">
+            <div style="padding:24px 20px; text-align:center; border-bottom:1px solid #f1f5f9;">
+                @if (!string.IsNullOrEmpty(Model.LogoDataUri))
+                {
+                    <img src="@Model.LogoDataUri"
+                         alt="El Sentido del Oído"
+                         style="height:75px; display:block; margin:0 auto 8px;"
+                         width="100" />
+                }
+                else
+                {
+                    <h2 style="color:#16255b; margin:0; font-size:24px;">El Sentido del Oído</h2>
+                }
+                <h2 style="color:#dc2626; margin:6px 0 0; font-size:20px;">Turno rechazado</h2>
+                <p style="color:#6b7280; margin:6px 0 0; font-size:13px;">Lamentamos informarte que tu solicitud de turno no pudo ser aprobada.</p>
+            </div>
+
+            <div style="padding:20px;">
+                <table role="presentation" width="100%" style="border-collapse:collapse;">
+                    <tr>
+                        <td style="padding:8px 0; vertical-align:top; width:30%; color:#6b7280; font-weight:600;">Paciente</td>
+                        <td style="padding:8px 0;">@Html.Raw(Model.PatientName)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0; color:#6b7280; font-weight:600;">Fecha</td>
+                        <td style="padding:8px 0;">@Html.Raw(Model.Date)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0; color:#6b7280; font-weight:600;">Hora</td>
+                        <td style="padding:8px 0;">@Html.Raw(Model.Hour)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0; color:#6b7280; font-weight:600;">Tipo</td>
+                        <td style="padding:8px 0;">@Html.Raw(Model.ShiftType)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0; color:#6b7280; font-weight:600;">Estado</td>
+                        <td style="padding:8px 0;"><span style="color:#dc2626; font-weight:600;">Rechazado</span></td>
+                    </tr>
+                </table>
+
+                @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+                {
+                    <div style="margin-top:18px; padding:14px; background:#fef2f2; border-radius:6px; border-left:4px solid #dc2626;">
+                        <p style="margin:0 0 6px; color:#991b1b; font-weight:600; font-size:14px;">Motivo del rechazo:</p>
+                        <p style="margin:0; color:#7f1d1d; line-height:1.5;">@Html.Raw(Model.RejectionReason)</p>
+                    </div>
+                }
+
+                <div style="margin-top:18px; padding:12px; background:#f8fafc; border-radius:6px; border:1px solid #eef2f7;">
+                    <p style="margin:0; color:#6b7280;">Si deseas solicitar un nuevo turno o tienes dudas, no dudes en contactarnos. Estamos para ayudarte.</p>
+                </div>
+
+                <div style="text-align:center; margin-top:18px;">
+                    <a href="@Model.BaseUrl"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       style="display:inline-block; padding:10px 20px; background:#16255b; color:#fff; text-decoration:none; border-radius:6px;">
+                        Solicitar nuevo turno
+                    </a>
+                </div>
+
+                <hr style="border:none; border-top:1px solid #f1f5f9; margin:18px 0;" />
+
+                <p style="font-size:12px; color:#9ca3af; text-align:center; margin:0;">
+                    Si tienes dudas, contáctanos a <a href="mailto:info@elsentidodeloido.com" style="color:#16255b; text-decoration:none;">info@elsentidodeloido.com</a>
+                </p>
+
+                <p style="font-size:11px; color:#9ca3af; text-align:center; margin:8px 0 0;">
+                    <strong>Dirección:</strong> @Html.Raw(Model.ClinicAddress)
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

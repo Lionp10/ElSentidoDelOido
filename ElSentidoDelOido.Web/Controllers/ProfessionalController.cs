@@ -1,9 +1,13 @@
 ﻿using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
+using ElSentidoDelOido.Web.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
+    [Authorize]
+    [AdminOnly]
     public class ProfessionalController : Controller
     {
         private readonly IProfessionalService _service;

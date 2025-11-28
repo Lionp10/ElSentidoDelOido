@@ -1,5 +1,6 @@
 ﻿using ElSentidoDelOido.Negocio.DTOs;
 using ElSentidoDelOido.Negocio.Services.Interfaces;
+using ElSentidoDelOido.Web.Authorization;
 using ElSentidoDelOido.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using System.Globalization;
 namespace ElSentidoDelOido.Web.Controllers
 {
     [Authorize]
+    //[AdminOnly]
     public class DashboardController : Controller
     {
         private readonly IShiftService _shiftService;

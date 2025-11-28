@@ -26,14 +26,36 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
                                     .Select(s => s.ScheduleId!.Value)
                                     .ToHashSet();
 
+            var isToday = date.Date == DateTime.Today;
+            var nowTime = DateTime.Now.TimeOfDay;
+
             var dtos = schedules
-                .Select(s => new ShiftScheduleDTO
+                .Select(s =>
                 {
-                    Id = s.Id,
-                    Hour = s.Hour,
-                    Enabled = !occupiedShifts.Contains(s.Id), 
-                    ShiftTypeId = s.ShiftTypeId,
-                    ShiftTypeName = s.ShiftType?.Name
+                    var available = !occupiedShifts.Contains(s.Id);
+
+                    if (available && isToday)
+                    {
+                        if (!string.IsNullOrWhiteSpace(s.Hour))
+                        {
+                            if (TimeSpan.TryParse(s.Hour.Trim(), out var scheduleTime))
+                            {
+                                if (scheduleTime <= nowTime)
+                                {
+                                    available = false;
+                                }
+                            }
+                        }
+                    }
+
+                    return new ShiftScheduleDTO
+                    {
+                        Id = s.Id,
+                        Hour = s.Hour,
+                        Enabled = available,
+                        ShiftTypeId = s.ShiftTypeId,
+                        ShiftTypeName = s.ShiftType?.Name
+                    };
                 })
                 .OrderBy(s => s.Hour)
                 .ToList();
