@@ -789,7 +789,6 @@
                                 btn.classList.add('btn-secondary');
                             } else {
                                 btn.addEventListener('click', function () {
-                                    // marcar seleccionado
                                     horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                                     this.classList.add('active');
                                     hourHidden.value = this.dataset.hora;
@@ -963,7 +962,6 @@
                     reprogTipoSelect.value = typeId;
                     reprogFechaInput.value = date;
 
-                    // Simular evento 'change' para cargar horarios al abrir el modal
                     const event = new Event('change', { bubbles: true });
                     reprogTipoSelect.dispatchEvent(event);
                     reprogFechaInput.dispatchEvent(event);
@@ -1025,7 +1023,6 @@
                             btn.classList.add('btn-secondary');
                         } else {
                             btn.addEventListener('click', function () {
-                                // marcar seleccionado
                                 horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                                 this.classList.add('active');
                                 hourHidden.value = this.dataset.hora;
@@ -1056,7 +1053,6 @@
                 if (professionalSelect) professionalSelect.value = profId || '';
                 if (hourHidden) hourHidden.value = hour || '';
 
-                // cargar horarios disponibles
                 loadHorarios(tipoSelect.value, fechaInput.value);
 
                 if (reprogramModal) reprogramModal.show();
@@ -1070,7 +1066,6 @@
             fechaInput.addEventListener('change', () => loadHorarios(tipoSelect.value, fechaInput.value));
         }
 
-        // Validación antes de submit
         const form = document.getElementById('reprogramForm');
         if (form) {
             form.addEventListener('submit', function (e) {

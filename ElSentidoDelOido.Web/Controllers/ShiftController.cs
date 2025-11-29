@@ -376,7 +376,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
                         var body = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/ShiftApproved.cshtml", emailModel);
 
-                        // Crear mensaje con logo adjunto
                         var message = new MimeMessage();
                         message.From.Add(new MailboxAddress(
                             _configuration["SmtpProfiles:notifications:FromName"] ?? _configuration["Smtp:FromName"] ?? "El Sentido del Oído",
@@ -386,7 +385,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
                         var builder = new BodyBuilder { HtmlBody = body };
 
-                        // Adjuntar el logo con Content-ID
                         var webRoot = _env.WebRootPath ?? string.Empty;
                         var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
                         
@@ -403,7 +401,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
                         message.Body = builder.ToMessageBody();
 
-                        // Enviar usando SMTP configurado para 'notifications'
                         var smtpHost = _configuration["SmtpProfiles:notifications:Host"] ?? _configuration["Smtp:Host"];
                         var smtpPortStr = _configuration["SmtpProfiles:notifications:Port"] ?? _configuration["Smtp:Port"] ?? "587";
                         var smtpPort = int.Parse(smtpPortStr);
@@ -414,7 +411,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
                         using var client = new SmtpClient();
                         
-                        // Usar SSL o StartTLS según configuración
                         var secureSocketOptions = useSsl && smtpPort == 465 
                             ? MailKit.Security.SecureSocketOptions.SslOnConnect 
                             : MailKit.Security.SecureSocketOptions.StartTls;
@@ -791,7 +787,6 @@ namespace ElSentidoDelOido.Web.Controllers
 
                         var builder = new BodyBuilder { HtmlBody = body };
 
-                        // Adjuntar logo si existe
                         var webRoot = _env.WebRootPath ?? string.Empty;
                         var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
                         if (!System.IO.File.Exists(logoPath))
