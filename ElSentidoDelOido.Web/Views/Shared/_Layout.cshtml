@@ -24,6 +24,12 @@
             --color-success: #48bb78;
             --color-warning: #f6ad55;
             --color-error: #f56565;
+
+            --footer-bg: var(--color-primary);
+            --footer-border: rgba(255,255,255,0.06);
+            --footer-link: rgba(255,255,255,0.85);
+            --footer-link-hover: #ffffff;
+            --footer-muted: rgba(255,255,255,0.7);
         }
 
         * {
@@ -282,50 +288,54 @@
         }
 
         footer {
-            background-color: var(--color-primary);
+            background-color: var(--footer-bg);
             color: white;
             padding: 3rem 0 1rem;
-            border-top: 4px solid var(--color-accent);
+            border-top: 4px solid var(--footer-border);
+        }
+
+        footer .footer-title {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
         }
 
         footer a {
-            color: var(--color-accent-light);
+            color: var(--footer-link);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         footer a:hover {
-            color: white;
+            color: var(--footer-link-hover);
+            text-decoration: none;
         }
 
         .footer-section {
             margin-bottom: 2rem;
         }
 
-        .footer-title {
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
         .footer-link {
             display: block;
             margin-bottom: 0.5rem;
-            opacity: 0.9;
+            color: var(--footer-link);
+            opacity: 0.95;
             transition: all 0.3s ease;
         }
 
         .footer-link:hover {
             opacity: 1;
             padding-left: 0.5rem;
+            color: var(--footer-link-hover);
         }
 
         .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
             padding-top: 2rem;
             margin-top: 2rem;
             font-size: 0.9rem;
-            opacity: 0.8;
+            color: var(--footer-muted);
         }
 
         .contact-item {
@@ -335,21 +345,25 @@
         }
 
         .contact-icon {
-            color: var(--color-primary);
+            color: var(--footer-link);
             font-size: 1.5rem;
             margin-right: 1rem;
             min-width: 24px;
         }
 
         .contact-info a {
-            color: var(--color-primary);
+            color: var(--footer-link);
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .contact-info a:hover {
-            color: var(--color-accent);
+            color: var(--footer-link-hover);
+        }
+
+        footer .text-muted {
+            color: var(--footer-muted) !important;
         }
 
         @@media (max-width: 768px) {
@@ -540,10 +554,15 @@
                     <div class="footer-section">
                         <div class="footer-title">Contacto</div>
                         <div class="contact-item">                            
-                            <a href="mailto:elsentidodeloido@gmail.com"><i class="bi bi-envelope"></i> elsentidodeloido@gmail.com</a>
+                            <a href="mailto:contacto@elsentidodelodio.com">contacto@elsentidodelodio.com</a>
                         </div>
                         <div class="contact-item">                            
-                            <a href="https://wa.me/543464512604" target="_blank"><i class="bi bi-whatsapp"></i> +54 3464 512604</a>
+                            <a href="https://wa.me/543464512604?text=¡Hola!%20Me%20contacto%20desde%20el%20sitio%20web.%20¿Podrías%20brindarme%20más%20información%20sobre%20El%20Sentido%20del%20Oído?"
+                               target="_blank" class="text-decoration-none">WhatsApp - Sandra</a>
+                        </div>
+                        <div class="contact-item">
+                            <a href="https://wa.me/543464543897?text=¡Hola!%20Me%20contacto%20desde%20el%20sitio%20web.%20¿Podrías%20brindarme%20más%20información%20sobre%20El%20Sentido%20del%20Oído?"
+                               target="_blank" class="text-decoration-none">WhatsApp - Joselina</a>
                         </div>
                     </div>
                 </div>
