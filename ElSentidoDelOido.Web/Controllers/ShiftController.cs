@@ -556,11 +556,106 @@ namespace ElSentidoDelOido.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Cancel(int id)
+        public async Task<IActionResult> Cancel(int id, string cancellationReason)
         {
             try
             {
                 await _shiftService.CancelAsync(id);
+
+                var shift = await _shiftService.GetByIdAsync(id);
+
+                if (shift != null && !string.IsNullOrWhiteSpace(shift.Email))
+                {
+                    try
+                    {
+                        var configuredBase = _configuration["App:BaseUrl"];
+                        string baseUrl;
+                        
+                        if (!string.IsNullOrWhiteSpace(configuredBase))
+                        {
+                            baseUrl = configuredBase.TrimEnd('/');
+                        }
+                        else
+                        {
+                            var scheme = Request.Scheme ?? "https";
+                            var host = Request.Host.HasValue ? Request.Host.Value : "localhost";
+                            baseUrl = $"{scheme}://{host}";
+                        }
+
+                        var clinicAddress = _configuration["Clinic:Address"] ?? "Belgrano 1212, Arequito, Santa Fe";
+                        var patientFullName = $"{shift.FirstName} {shift.LastName}".Trim();
+                        var safePatientName = HtmlEncoder.Default.Encode(patientFullName);
+                        var safeType = HtmlEncoder.Default.Encode(shift.ShiftTypeName ?? "-");
+                        var safeDate = shift.Date.HasValue ? shift.Date.Value.ToString("dd/MM/yyyy") : "-";
+                        var safeHour = HtmlEncoder.Default.Encode(shift.ScheduleHour ?? "-");
+                        var safeCancelReason = HtmlEncoder.Default.Encode(cancellationReason ?? "No se especificó un motivo").Replace("\n", "<br/>");
+
+                        var subject = $"Turno cancelado - {safeDate} {safeHour}";
+
+                        var emailModel = new ShiftRejectedEmailViewModel
+                        {
+                            PatientName = safePatientName,
+                            Date = safeDate,
+                            Hour = safeHour,
+                            ShiftType = safeType,
+                            RejectionReason = safeCancelReason, 
+                            ClinicAddress = HtmlEncoder.Default.Encode(clinicAddress),
+                            BaseUrl = baseUrl,
+                            LogoDataUri = "cid:logo"
+                        };
+
+                        var body = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/ShiftCancelled.cshtml", emailModel);
+
+                        var message = new MimeMessage();
+                        message.From.Add(new MailboxAddress(
+                            _configuration["SmtpProfiles:notifications:FromName"] ?? _configuration["Smtp:FromName"] ?? "El Sentido del Oído",
+                            "info@elsentidodeloido.com"));
+                        message.To.Add(new MailboxAddress(patientFullName, shift.Email));
+                        message.Subject = subject;
+
+                        var builder = new BodyBuilder { HtmlBody = body };
+
+                        var webRoot = _env.WebRootPath ?? string.Empty;
+                        var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
+                        
+                        if (!System.IO.File.Exists(logoPath))
+                        {
+                            logoPath = Path.Combine(webRoot, "Images", "LogoOido.webp");
+                        }
+
+                        if (System.IO.File.Exists(logoPath))
+                        {
+                            var logo = builder.LinkedResources.Add(logoPath);
+                            logo.ContentId = "logo";
+                        }
+
+                        message.Body = builder.ToMessageBody();
+
+                        var smtpHost = _configuration["SmtpProfiles:notifications:Host"] ?? _configuration["Smtp:Host"];
+                        var smtpPortStr = _configuration["SmtpProfiles:notifications:Port"] ?? _configuration["Smtp:Port"] ?? "587";
+                        var smtpPort = int.Parse(smtpPortStr);
+                        var smtpUser = _configuration["SmtpProfiles:notifications:User"] ?? _configuration["Smtp:User"];
+                        var smtpPass = _configuration["SmtpProfiles:notifications:Pass"] ?? _configuration["Smtp:Pass"];
+                        var useSslStr = _configuration["SmtpProfiles:notifications:UseSsl"] ?? _configuration["Smtp:UseSsl"] ?? "false";
+                        var useSsl = bool.Parse(useSslStr);
+
+                        using var client = new SmtpClient();
+                        
+                        var secureSocketOptions = useSsl && smtpPort == 465 
+                            ? MailKit.Security.SecureSocketOptions.SslOnConnect 
+                            : MailKit.Security.SecureSocketOptions.StartTls;
+                        
+                        await client.ConnectAsync(smtpHost, smtpPort, secureSocketOptions);
+                        await client.AuthenticateAsync(smtpUser, smtpPass);
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                    }
+                    catch (Exception mailEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error al enviar email de cancelación: {mailEx}");
+                    }
+                }
+
                 TempData["Mensaje"] = "Turno cancelado correctamente.";
             }
             catch (Exception ex)
@@ -584,6 +679,163 @@ namespace ElSentidoDelOido.Web.Controllers
             catch (Exception ex)
             {
                 TempData["Mensaje"] = $"Error al culminar el turno: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Main));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Reprogram(int id, int tipoTurnoId, DateTime date, string hour, int? professionalId)
+        {
+            try
+            {
+                var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
+                var isAllowed = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(role, "Moderator", StringComparison.OrdinalIgnoreCase);
+
+                if (!isAllowed)
+                {
+                    return Forbid();
+                }
+
+                var existing = await _shiftService.GetByIdAsync(id);
+                if (existing == null)
+                {
+                    TempData["Mensaje"] = "Turno no encontrado.";
+                    return RedirectToAction(nameof(Main));
+                }
+
+                if (string.Equals(existing.ShiftStateId, ShiftStateEnum.Culminado.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Mensaje"] = "No se puede reprogramar un turno que ya está marcado como 'Culminado'.";
+                    return RedirectToAction(nameof(Main));
+                }
+
+                int? scheduleId = null;
+                try
+                {
+                    var schedules = await _shiftScheduleService.GetAvailabilityAsync(tipoTurnoId, date.Date);
+                    var matched = schedules.FirstOrDefault(s => string.Equals(s.Hour?.Trim(), hour?.Trim(), StringComparison.OrdinalIgnoreCase));
+                    if (matched != null)
+                    {
+                        scheduleId = matched.Id;
+                    }
+                }
+                catch
+                {
+                    // si falla la búsqueda de horarios seguimos permitiendo actualizar con valor de hora libre
+                }
+
+                existing.ShiftTypeId = tipoTurnoId;
+                existing.Date = date;
+                existing.ScheduleId = scheduleId;
+                existing.ScheduleHour = hour;
+                existing.ProfessionalId = professionalId;
+
+                await _shiftService.UpdateAsync(existing);
+
+                if (!string.IsNullOrWhiteSpace(existing.Email))
+                {
+                    try
+                    {
+                        var configuredBase = _configuration["App:BaseUrl"];
+                        string baseUrl;
+                        if (!string.IsNullOrWhiteSpace(configuredBase))
+                        {
+                            baseUrl = configuredBase.TrimEnd('/');
+                        }
+                        else
+                        {
+                            var scheme = Request.Scheme ?? "https";
+                            var host = Request.Host.HasValue ? Request.Host.Value : "localhost";
+                            baseUrl = $"{scheme}://{host}";
+                        }
+
+                        var professionals = await _professional_service.GetAllAsync();
+                        var profesional = professionalId.HasValue ? professionals.FirstOrDefault(p => p.Id == professionalId.Value) : null;
+
+                        var clinicAddress = profesional?.Address ?? _configuration["Clinic:Address"] ?? "Belgrano 1212, Arequito, Santa Fe";
+                        var patientFullName = $"{existing.FirstName} {existing.LastName}".Trim();
+                        var safePatientName = HtmlEncoder.Default.Encode(patientFullName);
+                        var safeProfessionalName = HtmlEncoder.Default.Encode(profesional != null ? $"{profesional.FirstName} {profesional.LastName}".Trim() : "Profesional asignado");
+                        var safeType = HtmlEncoder.Default.Encode(existing.ShiftTypeName ?? "-");
+                        var safeDate = existing.Date.HasValue ? existing.Date.Value.ToString("dd/MM/yyyy") : "-";
+                        var safeHour = HtmlEncoder.Default.Encode(existing.ScheduleHour ?? hour ?? "-");
+                        var patientNoteHtml = HtmlEncoder.Default.Encode(existing.Message ?? string.Empty).Replace("\n", "<br/>");
+
+                        var subject = $"Turno reprogramado - {safeDate} {safeHour}";
+
+                        var emailModel = new ShiftEmailViewModel
+                        {
+                            PatientName = safePatientName,
+                            Date = safeDate,
+                            Hour = safeHour,
+                            ShiftType = safeType,
+                            Professional = safeProfessionalName,
+                            ClinicAddress = HtmlEncoder.Default.Encode(clinicAddress),
+                            PatientNote = patientNoteHtml,
+                            BaseUrl = baseUrl,
+                            LogoDataUri = "cid:logo"
+                        };
+
+                        var body = await _viewRenderer.RenderViewToStringAsync("~/Views/Emails/ShiftRescheduled.cshtml", emailModel);
+
+                        var message = new MimeMessage();
+                        message.From.Add(new MailboxAddress(
+                            _configuration["SmtpProfiles:notifications:FromName"] ?? _configuration["Smtp:FromName"] ?? "El Sentido del Oído",
+                            _configuration["SmtpProfiles:notifications:FromEmail"] ?? _configuration["Smtp:FromEmail"] ?? "info@elsentidodeloido.com"));
+                        message.To.Add(new MailboxAddress(patientFullName, existing.Email));
+                        message.Subject = subject;
+
+                        var builder = new BodyBuilder { HtmlBody = body };
+
+                        // Adjuntar logo si existe
+                        var webRoot = _env.WebRootPath ?? string.Empty;
+                        var logoPath = Path.Combine(webRoot, "Images", "LogoOido.png");
+                        if (!System.IO.File.Exists(logoPath))
+                        {
+                            logoPath = Path.Combine(webRoot, "Images", "LogoOido.webp");
+                        }
+
+                        if (System.IO.File.Exists(logoPath))
+                        {
+                            var logo = builder.LinkedResources.Add(logoPath);
+                            logo.ContentId = "logo";
+                        }
+
+                        message.Body = builder.ToMessageBody();
+
+                        var smtpHost = _configuration["SmtpProfiles:notifications:Host"] ?? _configuration["Smtp:Host"];
+                        var smtpPortStr = _configuration["SmtpProfiles:notifications:Port"] ?? _configuration["Smtp:Port"] ?? "587";
+                        var smtpPort = int.Parse(smtpPortStr);
+                        var smtpUser = _configuration["SmtpProfiles:notifications:User"] ?? _configuration["Smtp:User"];
+                        var smtpPass = _configuration["SmtpProfiles:notifications:Pass"] ?? _configuration["Smtp:Pass"];
+                        var useSslStr = _configuration["SmtpProfiles:notifications:UseSsl"] ?? _configuration["Smtp:UseSsl"] ?? "false";
+                        var useSsl = bool.Parse(useSslStr);
+
+                        using var client = new MailKit.Net.Smtp.SmtpClient();
+                        var secureSocketOptions = useSsl && smtpPort == 465
+                            ? MailKit.Security.SecureSocketOptions.SslOnConnect
+                            : MailKit.Security.SecureSocketOptions.StartTls;
+
+                        await client.ConnectAsync(smtpHost, smtpPort, secureSocketOptions);
+                        await client.AuthenticateAsync(smtpUser, smtpPass);
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                    }
+                    catch (Exception mailEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error al enviar email de reprogramación: {mailEx}");
+                    }
+                }
+
+                TempData["Mensaje"] = "Turno reprogramado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Mensaje"] = $"Error al reprogramar el turno: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Main));

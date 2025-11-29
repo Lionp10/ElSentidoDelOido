@@ -22,7 +22,7 @@ namespace ElSentidoDelOido.Web.Controllers
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "User");
+                return RedirectToAction("Index", "Dashboard");
             }
 
             return View();
@@ -63,15 +63,7 @@ namespace ElSentidoDelOido.Web.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 
-            var role = user.RoleName ?? "User";
-            if (string.Equals(role, "Admin".ToUpper(), StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("Index", "Dashboard");
-            }
-            else
-            {
-                return RedirectToAction("Main", "Shift");
-            }
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]

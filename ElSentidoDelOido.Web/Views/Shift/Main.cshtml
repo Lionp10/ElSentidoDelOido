@@ -7,6 +7,7 @@
     
     var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
     var isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+    var isModerator = string.Equals(role, "Moderator", StringComparison.OrdinalIgnoreCase);
 }
 
 <style>
@@ -407,6 +408,17 @@
                                                             title="Eliminar">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
+                                                    <button type="button"
+                                                            class="btn btn-icon-edit btn-reprogram-trigger"
+                                                            data-id="@item.Id"
+                                                            data-typeid="@(item.ShiftTypeId ?? 0)"
+                                                            data-date="@(item.Date?.ToString("yyyy-MM-dd") ?? "")"
+                                                            data-hour="@(item.ScheduleHour ?? "")"
+                                                            data-professionalid="@(item.ProfessionalId?.ToString() ?? "")"
+                                                            data-patient="@item.FirstName @item.LastName"
+                                                            title="Reprogramar Turno">
+                                                        <i class="bi bi-arrow-repeat"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -587,12 +599,21 @@
             </div>
             <div class="modal-body">
                 <p id="cancelMessage">¿Confirmas cancelar este turno confirmado?</p>
-                <p class="text-muted small">Esta acción cambiará el estado del turno a "Cancelado".</p>
+                <p class="text-muted small">Esta acción cambiará el estado del turno a "Cancelado" y se notificará al paciente.</p>
                 
+                <div class="mb-3 mt-3">
+                    <label for="cancelReasonTextarea" class="form-label">Motivo de la cancelación <span class="text-danger">*</span></label>
+                    <textarea id="cancelReasonTextarea" class="form-control" rows="4" placeholder="Explica el motivo de la cancelación para informar al paciente..."></textarea>
+                    <div class="text-danger small mt-1" id="cancelReasonError" style="display:none;">
+                        Por favor, proporciona un motivo de la cancelación.
+                    </div>
+                </div>
+
                 @using (Html.BeginForm("Cancel", "Shift", FormMethod.Post, new { id = "cancelForm" }))
                 {
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" id="cancelShiftId" value="" />
+                    <input type="hidden" name="cancellationReason" id="cancelReasonInput" value="" />
                     <div class="d-flex justify-content-end gap-2 mt-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
                         <button type="submit" id="cancelConfirmBtn" class="btn btn-warning">Cancelar Turno</button>
@@ -621,6 +642,66 @@
                     <div class="d-flex justify-content-end gap-2 mt-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
                         <button type="submit" id="completeConfirmBtn" class="btn btn-primary">Marcar Culminado</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-confirm" id="reprogramModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat"></i> Reprogramar Turno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="reprogramMessage">Modifica los datos del turno y confirma la reprogramación.</p>
+
+                @using (Html.BeginForm("Reprogram", "Shift", FormMethod.Post, new { id = "reprogramForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="reprogramShiftId" value="" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Turno</label>
+                        <select id="reprogTipoSelect" name="tipoTurnoId" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            @foreach (var t in Model.ShiftTypes)
+                            {
+                                <option value="@t.Id">@t.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" id="reprogFecha" name="date" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Horario disponible</label>
+                        <div id="reprogHorariosContainer" class="d-flex flex-wrap gap-2">
+                            <small class="text-muted">Selecciona tipo y fecha para cargar horarios</small>
+                        </div>
+                        <input type="hidden" id="reprogHourInput" name="hour" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Profesional</label>
+                        <select id="reprogProfessionalSelect" name="professionalId" class="form-select">
+                            <option value="">Sin asignar</option>
+                            @foreach (var p in Model.Professionals)
+                            {
+                                <option value="@p.Id">@p.FirstName @p.LastName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="reprogramConfirmBtn" class="btn btn-primary">Reprogramar</button>
                     </div>
                 }
             </div>
@@ -657,11 +738,72 @@
             const cancelModal = cancelModalEl ? new bootstrap.Modal(cancelModalEl) : null;
             const cancelMsg = document.getElementById('cancelMessage');
             const cancelIdInput = document.getElementById('cancelShiftId');
+            const cancelReasonTextarea = document.getElementById('cancelReasonTextarea');
+            const cancelReasonInput = document.getElementById('cancelReasonInput');
+            const cancelReasonError = document.getElementById('cancelReasonError');
+            const cancelForm = document.getElementById('cancelForm');
 
             const completeModalEl = document.getElementById('completeModal');
             const completeModal = completeModalEl ? new bootstrap.Modal(completeModalEl) : null;
             const completeMsg = document.getElementById('completeMessage');
             const completeIdInput = document.getElementById('completeShiftId');
+
+            const reprogramModalEl = document.getElementById('reprogramModal');
+            const reprogramModal = reprogramModalEl ? new bootstrap.Modal(reprogramModalEl) : null;
+            const reprogramIdInput = document.getElementById('reprogramShiftId');
+            const tipoSelect = document.getElementById('reprogTipoSelect');
+            const fechaInput = document.getElementById('reprogFecha');
+            const horariosContainer = document.getElementById('reprogHorariosContainer');
+            const hourHidden = document.getElementById('reprogHourInput');
+            const professionalSelect = document.getElementById('reprogProfessionalSelect');
+
+            function loadHorarios(tipoId, fecha) {
+                horariosContainer.innerHTML = '<small class="text-muted">Cargando horarios...</small>';
+                if (!tipoId || !fecha) {
+                    horariosContainer.innerHTML = '<small class="text-muted">Selecciona tipo y fecha para ver horarios</small>';
+                    return;
+                }
+
+                fetch('@Url.Action("ObtenerHorarios", "Shift")?tipoTurnoId=' + encodeURIComponent(tipoId) + '&fecha=' + encodeURIComponent(fecha))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!Array.isArray(data)) {
+                            horariosContainer.innerHTML = `<small class="text-muted">${data.mensaje || 'No hay horarios disponibles'}</small>`;
+                            return;
+                        }
+
+                        if (data.length === 0) {
+                            horariosContainer.innerHTML = '<small class="text-muted">No hay horarios disponibles para este día</small>';
+                            return;
+                        }
+
+                        horariosContainer.innerHTML = '';
+                        data.forEach(h => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'btn btn-outline-primary btn-sm';
+                            btn.textContent = h.hora;
+                            btn.dataset.hora = h.hora;
+                            if (!h.disponible) {
+                                btn.disabled = true;
+                                btn.classList.add('btn-secondary');
+                            } else {
+                                btn.addEventListener('click', function () {
+                                    // marcar seleccionado
+                                    horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                                    this.classList.add('active');
+                                    hourHidden.value = this.dataset.hora;
+                                });
+                            }
+
+                            horariosContainer.appendChild(btn);
+                        });
+                    })
+                    .catch(err => {
+                        horariosContainer.innerHTML = '<small class="text-muted">Error al cargar horarios</small>';
+                        console.error(err);
+                    });
+            }
 
             document.querySelectorAll('.btn-approve-trigger').forEach(btn => {
                 btn.addEventListener('click', function (e) {
@@ -694,8 +836,7 @@
                     if (!rejectIdInput) return;
                     rejectIdInput.value = id;
                     rejectMsg.textContent = `¿Confirmas rechazar el turno de ${patient}?`;
-                    
-                    // Limpiar textarea y errores
+
                     if (rejectionReasonTextarea) rejectionReasonTextarea.value = '';
                     if (rejectionReasonError) rejectionReasonError.style.display = 'none';
                     
@@ -703,7 +844,6 @@
                 });
             });
 
-            // Validación del formulario de rechazo
             if (rejectForm) {
                 rejectForm.addEventListener('submit', function(e) {
                     const reason = rejectionReasonTextarea ? rejectionReasonTextarea.value.trim() : '';
@@ -718,8 +858,7 @@
                         }
                         return false;
                     }
-                    
-                    // Copiar el motivo al input oculto
+
                     if (rejectionReasonInput) {
                         rejectionReasonInput.value = reason;
                     }
@@ -728,7 +867,6 @@
                 });
             }
 
-            // Ocultar error al escribir
             if (rejectionReasonTextarea) {
                 rejectionReasonTextarea.addEventListener('input', function() {
                     if (this.value.trim() && rejectionReasonError) {
@@ -758,9 +896,44 @@
                     if (!cancelIdInput) return;
                     cancelIdInput.value = id;
                     cancelMsg.textContent = `¿Confirmas cancelar el turno de ${patient} programado para ${datetime}?`;
+                    
+                    if (cancelReasonTextarea) cancelReasonTextarea.value = '';
+                    if (cancelReasonError) cancelReasonError.style.display = 'none';
+
                     if (cancelModal) cancelModal.show();
                 });
             });
+
+            if (cancelForm) {
+                cancelForm.addEventListener('submit', function(e) {
+                    const reason = cancelReasonTextarea ? cancelReasonTextarea.value.trim() : '';
+                    
+                    if (!reason) {
+                        e.preventDefault();
+                        if (cancelReasonError) {
+                            cancelReasonError.style.display = 'block';
+                        }
+                        if (cancelReasonTextarea) {
+                            cancelReasonTextarea.focus();
+                        }
+                        return false;
+                    }
+
+                    if (cancelReasonInput) {
+                        cancelReasonInput.value = reason;
+                    }
+
+                    return true;
+                });
+            }
+
+            if (cancelReasonTextarea) {
+                cancelReasonTextarea.addEventListener('input', function() {
+                    if (this.value.trim() && cancelReasonError) {
+                        cancelReasonError.style.display = 'none';
+                    }
+                });
+            }
 
             document.querySelectorAll('.btn-complete-trigger').forEach(btn => {
                 btn.addEventListener('click', function (e) {
@@ -774,6 +947,150 @@
                     if (completeModal) completeModal.show();
                 });
             });
+
+            document.querySelectorAll('.btn-reprogram-trigger').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const id = this.getAttribute('data-id');
+                    const patient = this.getAttribute('data-patient');
+                    const typeId = this.getAttribute('data-typeid');
+                    const date = this.getAttribute('data-date');
+                    const hour = this.getAttribute('data-hour');
+                    const professionalId = this.getAttribute('data-professionalid');
+                    
+                    if (!reprogramIdInput) return;
+                    reprogramIdInput.value = id;
+
+                    reprogTipoSelect.value = typeId;
+                    reprogFechaInput.value = date;
+
+                    // Simular evento 'change' para cargar horarios al abrir el modal
+                    const event = new Event('change', { bubbles: true });
+                    reprogTipoSelect.dispatchEvent(event);
+                    reprogFechaInput.dispatchEvent(event);
+
+                    if (professionalId) {
+                        reprogProfessionalSelect.value = professionalId;
+                    } else {
+                        reprogProfessionalSelect.value = '';
+                    }
+
+                    reprogramMsg.innerHTML = `Modifica los datos del turno y confirma la reprogramación para el paciente ${patient}.`;
+
+                    if (reprogramModal) reprogramModal.show();
+                });
+            });
         })();
     </script>
+
+    <script>
+    (function () {
+        const reprogramModalEl = document.getElementById('reprogramModal');
+        const reprogramModal = reprogramModalEl ? new bootstrap.Modal(reprogramModalEl) : null;
+        const reprogramIdInput = document.getElementById('reprogramShiftId');
+        const tipoSelect = document.getElementById('reprogTipoSelect');
+        const fechaInput = document.getElementById('reprogFecha');
+        const horariosContainer = document.getElementById('reprogHorariosContainer');
+        const hourHidden = document.getElementById('reprogHourInput');
+        const professionalSelect = document.getElementById('reprogProfessionalSelect');
+
+        function loadHorarios(tipoId, fecha) {
+            horariosContainer.innerHTML = '<small class="text-muted">Cargando horarios...</small>';
+            if (!tipoId || !fecha) {
+                horariosContainer.innerHTML = '<small class="text-muted">Selecciona tipo y fecha para ver horarios</small>';
+                return;
+            }
+
+            fetch('@Url.Action("ObtenerHorarios", "Shift")?tipoTurnoId=' + encodeURIComponent(tipoId) + '&fecha=' + encodeURIComponent(fecha))
+                .then(r => r.json())
+                .then(data => {
+                    if (!Array.isArray(data)) {
+                        horariosContainer.innerHTML = `<small class="text-muted">${data.mensaje || 'No hay horarios disponibles'}</small>`;
+                        return;
+                    }
+
+                    if (data.length === 0) {
+                        horariosContainer.innerHTML = '<small class="text-muted">No hay horarios disponibles para este día</small>';
+                        return;
+                    }
+
+                    horariosContainer.innerHTML = '';
+                    data.forEach(h => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-outline-primary btn-sm';
+                        btn.textContent = h.hora;
+                        btn.dataset.hora = h.hora;
+                        if (!h.disponible) {
+                            btn.disabled = true;
+                            btn.classList.add('btn-secondary');
+                        } else {
+                            btn.addEventListener('click', function () {
+                                // marcar seleccionado
+                                horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                                this.classList.add('active');
+                                hourHidden.value = this.dataset.hora;
+                            });
+                        }
+
+                        horariosContainer.appendChild(btn);
+                    });
+                })
+                .catch(err => {
+                    horariosContainer.innerHTML = '<small class="text-muted">Error al cargar horarios</small>';
+                    console.error(err);
+                });
+        }
+
+        document.querySelectorAll('.btn-reprogram-trigger').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const typeId = this.getAttribute('data-typeid');
+                const date = this.getAttribute('data-date');
+                const hour = this.getAttribute('data-hour');
+                const profId = this.getAttribute('data-professionalid');
+
+                if (!reprogramIdInput) return;
+                reprogramIdInput.value = id;
+                if (tipoSelect) tipoSelect.value = typeId || '';
+                if (fechaInput) fechaInput.value = date || '';
+                if (professionalSelect) professionalSelect.value = profId || '';
+                if (hourHidden) hourHidden.value = hour || '';
+
+                // cargar horarios disponibles
+                loadHorarios(tipoSelect.value, fechaInput.value);
+
+                if (reprogramModal) reprogramModal.show();
+            });
+        });
+
+        if (tipoSelect) {
+            tipoSelect.addEventListener('change', () => loadHorarios(tipoSelect.value, fechaInput.value));
+        }
+        if (fechaInput) {
+            fechaInput.addEventListener('change', () => loadHorarios(tipoSelect.value, fechaInput.value));
+        }
+
+        // Validación antes de submit
+        const form = document.getElementById('reprogramForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                if (!tipoSelect.value) {
+                    e.preventDefault();
+                    alert('Selecciona un tipo de turno.');
+                    return false;
+                }
+                if (!fechaInput.value) {
+                    e.preventDefault();
+                    alert('Selecciona una fecha.');
+                    return false;
+                }
+                if (!hourHidden.value) {
+                    e.preventDefault();
+                    alert('Selecciona una hora.');
+                    return false;
+                }
+            });
+        }
+    })();
+</script>
 }

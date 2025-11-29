@@ -26,5 +26,9 @@ namespace ElSentidoDelOido.Web.Models
 
         public IEnumerable<ContactMessageDTO> ContactMessages { get; set; } = new List<ContactMessageDTO>();
         public int UnansweredMessagesCount => ContactMessages is ICollection<ContactMessageDTO> c ? c.Count : (ContactMessages?.Count() ?? 0);
+
+        public int MessagesTotal { get; set; }
+        public int MessagesCurrentPage { get; set; }
+        public int MessagesPageSize { get; set; } = 10;
     }
 }

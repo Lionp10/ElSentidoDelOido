@@ -8,8 +8,7 @@ using System.Globalization;
 
 namespace ElSentidoDelOido.Web.Controllers
 {
-    [Authorize]
-    //[AdminOnly]
+    [Authorize(Roles = "ADMIN,MODERATOR")]
     public class DashboardController : Controller
     {
         private readonly IShiftService _shiftService;
@@ -29,10 +28,11 @@ namespace ElSentidoDelOido.Web.Controllers
             _contactService = contactService;
         }
 
-        public async Task<IActionResult> Index(int pendingPage = 1, int todayPage = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(int pendingPage = 1, int todayPage = 1, int messagesPage = 1, int pageSize = 10)
         {
             pendingPage = Math.Max(1, pendingPage);
             todayPage = Math.Max(1, todayPage);
+            messagesPage = Math.Max(1, messagesPage);
             pageSize = Math.Clamp(pageSize, 1, 50);
 
             var (pendingItems, pendingTotal) = await _shiftService.GetPagedAsync(
@@ -40,8 +40,8 @@ namespace ElSentidoDelOido.Web.Controllers
                 estado: "Pendiente",
                 tipoTurnoId: null,
                 professionalId: null,
-                page: pendingPage,
-                pageSize: pageSize);
+                page: 1,
+                pageSize: int.MaxValue);
 
             var today = DateTime.Today;
             var (todayItemsAll, todayTotalAll) = await _shiftService.GetPagedAsync(
@@ -50,12 +50,12 @@ namespace ElSentidoDelOido.Web.Controllers
                 tipoTurnoId: null,
                 professionalId: null,
                 page: 1,
-                pageSize: int.MaxValue); 
+                pageSize: int.MaxValue);
 
             var todayConfirmed = todayItemsAll.Where(s => string.Equals(s.ShiftStateId, "Confirmado", StringComparison.OrdinalIgnoreCase))
                                              .OrderBy(s =>
                                              {
-                                                 if (TimeSpan.TryParseExact(s.ScheduleHour ?? string.Empty, @"hh\:mm", CultureInfo.InvariantCulture, out var t) 
+                                                 if (TimeSpan.TryParseExact(s.ScheduleHour ?? string.Empty, @"hh\:mm", CultureInfo.InvariantCulture, out var t)
                                                      || TimeSpan.TryParse(s.ScheduleHour ?? string.Empty, out t))
                                                  {
                                                      return t;
@@ -111,10 +111,34 @@ namespace ElSentidoDelOido.Web.Controllers
             }
 
             var totalTodayConfirmed = todayConfirmed.Count;
-            var todayPaged = todayConfirmed
-                .Skip((todayPage - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+
+            IEnumerable<ShiftDTO> pendingPaged;
+            if (pendingTotal <= 5)
+            {
+                pendingPaged = pendingItems.ToList();
+                pendingPage = 1;
+            }
+            else
+            {
+                pendingPaged = pendingItems
+                    .Skip((pendingPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+            }
+
+            IEnumerable<ShiftDTO> todayPaged;
+            if (totalTodayConfirmed <= 5)
+            {
+                todayPaged = todayConfirmed.ToList();
+                todayPage = 1;
+            }
+            else
+            {
+                todayPaged = todayConfirmed
+                    .Skip((todayPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+            }
 
             var professionals = await _professionalService.GetAllAsync();
             var activeProfessionalsCount = professionals.Count(p => p.Enabled.GetValueOrDefault());
@@ -125,6 +149,21 @@ namespace ElSentidoDelOido.Web.Controllers
             var allMessages = (await _contactService.GetAllAsync()) ?? Enumerable.Empty<ContactMessageDTO>();
             var unanswered = allMessages.Where(m => !m.Answered).OrderByDescending(m => m.CreatedAt).ToList();
 
+            IEnumerable<ContactMessageDTO> messagesPaged;
+            int messagesTotal = unanswered.Count;
+            if (messagesTotal <= 5)
+            {
+                messagesPaged = unanswered;
+                messagesPage = 1;
+            }
+            else
+            {
+                messagesPaged = unanswered
+                    .Skip((messagesPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+            }
+
             var model = new DashboardIndexViewModel
             {
                 PendingCount = pendingTotal,
@@ -132,7 +171,7 @@ namespace ElSentidoDelOido.Web.Controllers
                 ActiveProfessionalsCount = activeProfessionalsCount,
                 UpcomingHolidaysCount = upcomingHolidays.Count,
 
-                PendingShifts = pendingItems,
+                PendingShifts = pendingPaged,
                 PendingTotal = pendingTotal,
                 PendingCurrentPage = pendingPage,
 
@@ -147,7 +186,10 @@ namespace ElSentidoDelOido.Web.Controllers
                 TodayNextShiftId = nextId,
                 UrgentPendingShiftIds = urgentSet,
 
-                ContactMessages = unanswered
+                ContactMessages = messagesPaged,
+                MessagesTotal = messagesTotal,
+                MessagesCurrentPage = messagesPage,
+                MessagesPageSize = pageSize
             };
 
             return View(model);
