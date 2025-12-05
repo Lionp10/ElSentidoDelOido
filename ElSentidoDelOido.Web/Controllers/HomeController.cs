@@ -27,6 +27,11 @@ namespace ElSentidoDelOido.Web.Controllers
             return View();
         }
 
+        public IActionResult About()
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnviarFormulario(ContactFormModel model)
