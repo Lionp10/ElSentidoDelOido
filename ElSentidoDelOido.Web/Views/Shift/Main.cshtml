@@ -408,17 +408,20 @@
                                                             title="Eliminar">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
-                                                    <button type="button"
-                                                            class="btn btn-icon-edit btn-reprogram-trigger"
-                                                            data-id="@item.Id"
-                                                            data-typeid="@(item.ShiftTypeId ?? 0)"
-                                                            data-date="@(item.Date?.ToString("yyyy-MM-dd") ?? "")"
-                                                            data-hour="@(item.ScheduleHour ?? "")"
-                                                            data-professionalid="@(item.ProfessionalId?.ToString() ?? "")"
-                                                            data-patient="@item.FirstName @item.LastName"
-                                                            title="Reprogramar Turno">
-                                                        <i class="bi bi-arrow-repeat"></i>
-                                                    </button>
+                                                    @if (!isCulminado)
+                                                    {
+                                                        <button type="button"
+                                                                class="btn btn-icon-edit btn-reprogram-trigger"
+                                                                data-id="@item.Id"
+                                                                data-typeid="@(item.ShiftTypeId ?? 0)"
+                                                                data-date="@(item.Date?.ToString("yyyy-MM-dd") ?? "")"
+                                                                data-hour="@(item.ScheduleHour ?? "")"
+                                                                data-professionalid="@(item.ProfessionalId?.ToString() ?? "")"
+                                                                data-patient="@item.FirstName @item.LastName"
+                                                                title="Reprogramar Turno">
+                                                            <i class="bi bi-arrow-repeat"></i>
+                                                        </button>
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
@@ -712,17 +715,19 @@
 @section Scripts {
     <script>
         (function () {
+            // Modales y elementos
             const approveModalEl = document.getElementById('approveModal');
             const approveModal = approveModalEl ? new bootstrap.Modal(approveModalEl) : null;
-            const approveMsg = document.getElementById('approveMessage');
+            const approveMsgEl = document.getElementById('approveMessage');
             const approveIdInput = document.getElementById('approveShiftId');
-            const approveProfIdInput = document.getElementById('approveProfessionalId');
-            const professionalSelect = document.getElementById('professionalSelect');
-            const approveBtn = document.getElementById('approveConfirmBtn');
+            const approveProfessionalIdInput = document.getElementById('approveProfessionalId');
+            const approveProfessionalSelect = document.getElementById('professionalSelect');
+            const approveConfirmBtn = document.getElementById('approveConfirmBtn');
+            const approveForm = document.getElementById('approveForm');
 
             const rejectModalEl = document.getElementById('rejectModal');
             const rejectModal = rejectModalEl ? new bootstrap.Modal(rejectModalEl) : null;
-            const rejectMsg = document.getElementById('rejectMessage');
+            const rejectMsgEl = document.getElementById('rejectMessage');
             const rejectIdInput = document.getElementById('rejectShiftId');
             const rejectionReasonTextarea = document.getElementById('rejectionReasonTextarea');
             const rejectionReasonInput = document.getElementById('rejectionReasonInput');
@@ -731,12 +736,12 @@
 
             const deleteModalEl = document.getElementById('confirmDeleteModal');
             const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
-            const deleteMsg = document.getElementById('deleteMessage');
+            const deleteMsgEl = document.getElementById('deleteMessage');
             const deleteIdInput = document.getElementById('deleteItemId');
 
             const cancelModalEl = document.getElementById('cancelModal');
             const cancelModal = cancelModalEl ? new bootstrap.Modal(cancelModalEl) : null;
-            const cancelMsg = document.getElementById('cancelMessage');
+            const cancelMsgEl = document.getElementById('cancelMessage');
             const cancelIdInput = document.getElementById('cancelShiftId');
             const cancelReasonTextarea = document.getElementById('cancelReasonTextarea');
             const cancelReasonInput = document.getElementById('cancelReasonInput');
@@ -745,22 +750,26 @@
 
             const completeModalEl = document.getElementById('completeModal');
             const completeModal = completeModalEl ? new bootstrap.Modal(completeModalEl) : null;
-            const completeMsg = document.getElementById('completeMessage');
+            const completeMsgEl = document.getElementById('completeMessage');
             const completeIdInput = document.getElementById('completeShiftId');
 
             const reprogramModalEl = document.getElementById('reprogramModal');
             const reprogramModal = reprogramModalEl ? new bootstrap.Modal(reprogramModalEl) : null;
             const reprogramIdInput = document.getElementById('reprogramShiftId');
-            const tipoSelect = document.getElementById('reprogTipoSelect');
-            const fechaInput = document.getElementById('reprogFecha');
-            const horariosContainer = document.getElementById('reprogHorariosContainer');
-            const hourHidden = document.getElementById('reprogHourInput');
-            const professionalSelect = document.getElementById('reprogProfessionalSelect');
+            const reprogTipoSelect = document.getElementById('reprogTipoSelect');
+            const reprogFechaInput = document.getElementById('reprogFecha');
+            const reprogHorariosContainer = document.getElementById('reprogHorariosContainer');
+            const reprogHourInput = document.getElementById('reprogHourInput');
+            const reprogProfessionalSelect = document.getElementById('reprogProfessionalSelect');
+            const reprogramMsgEl = document.getElementById('reprogramMessage');
+            const reprogramForm = document.getElementById('reprogramForm');
 
+            // Función para cargar horarios
             function loadHorarios(tipoId, fecha) {
-                horariosContainer.innerHTML = '<small class="text-muted">Cargando horarios...</small>';
+                if (!reprogHorariosContainer) return;
+                reprogHorariosContainer.innerHTML = '<small class="text-muted">Cargando horarios...</small>';
                 if (!tipoId || !fecha) {
-                    horariosContainer.innerHTML = '<small class="text-muted">Selecciona tipo y fecha para ver horarios</small>';
+                    reprogHorariosContainer.innerHTML = '<small class="text-muted">Selecciona tipo y fecha para ver horarios</small>';
                     return;
                 }
 
@@ -768,16 +777,16 @@
                     .then(r => r.json())
                     .then(data => {
                         if (!Array.isArray(data)) {
-                            horariosContainer.innerHTML = `<small class="text-muted">${data.mensaje || 'No hay horarios disponibles'}</small>`;
+                            reprogHorariosContainer.innerHTML = `<small class="text-muted">${data && data.mensaje ? data.mensaje : 'No hay horarios disponibles'}</small>`;
                             return;
                         }
 
                         if (data.length === 0) {
-                            horariosContainer.innerHTML = '<small class="text-muted">No hay horarios disponibles para este día</small>';
+                            reprogHorariosContainer.innerHTML = '<small class="text-muted">No hay horarios disponibles para este día</small>';
                             return;
                         }
 
-                        horariosContainer.innerHTML = '';
+                        reprogHorariosContainer.innerHTML = '';
                         data.forEach(h => {
                             const btn = document.createElement('button');
                             btn.type = 'button';
@@ -789,303 +798,193 @@
                                 btn.classList.add('btn-secondary');
                             } else {
                                 btn.addEventListener('click', function () {
-                                    horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                                    reprogHorariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                                     this.classList.add('active');
-                                    hourHidden.value = this.dataset.hora;
+                                    if (reprogHourInput) reprogHourInput.value = this.dataset.hora;
                                 });
                             }
 
-                            horariosContainer.appendChild(btn);
+                            reprogHorariosContainer.appendChild(btn);
                         });
                     })
                     .catch(err => {
-                        horariosContainer.innerHTML = '<small class="text-muted">Error al cargar horarios</small>';
+                        reprogHorariosContainer.innerHTML = '<small class="text-muted">Error al cargar horarios</small>';
                         console.error(err);
                     });
             }
 
+            // ---------- Listeners ----------
+
+            // Aprobar
             document.querySelectorAll('.btn-approve-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
                     if (!approveIdInput) return;
                     approveIdInput.value = id;
-                    approveMsg.textContent = `¿Confirmas aprobar el turno de ${patient}? Debes asignar un profesional.`;
-                    if (professionalSelect) professionalSelect.value = '';
-                    if (approveProfIdInput) approveProfIdInput.value = '';
-                    if (approveBtn) approveBtn.disabled = true;
-                    
+                    if (approveMsgEl) approveMsgEl.textContent = `¿Confirmas aprobar el turno de ${patient}? Debes asignar un profesional.`;
+                    if (approveProfessionalSelect) approveProfessionalSelect.value = '';
+                    if (approveProfessionalIdInput) approveProfessionalIdInput.value = '';
+                    if (approveConfirmBtn) approveConfirmBtn.disabled = true;
                     if (approveModal) approveModal.show();
                 });
             });
 
-            if (professionalSelect) {
-                professionalSelect.addEventListener('change', function() {
-                    if (approveProfIdInput) approveProfIdInput.value = this.value;
-                    if (approveBtn) approveBtn.disabled = !this.value;
+            if (approveProfessionalSelect) {
+                approveProfessionalSelect.addEventListener('change', function () {
+                    if (approveProfessionalIdInput) approveProfessionalIdInput.value = this.value;
+                    if (approveConfirmBtn) approveConfirmBtn.disabled = !this.value;
                 });
             }
 
+            // Rechazar
             document.querySelectorAll('.btn-reject-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
                     if (!rejectIdInput) return;
                     rejectIdInput.value = id;
-                    rejectMsg.textContent = `¿Confirmas rechazar el turno de ${patient}?`;
-
+                    if (rejectMsgEl) rejectMsgEl.textContent = `¿Confirmas rechazar el turno de ${patient}?`;
                     if (rejectionReasonTextarea) rejectionReasonTextarea.value = '';
                     if (rejectionReasonError) rejectionReasonError.style.display = 'none';
-                    
                     if (rejectModal) rejectModal.show();
                 });
             });
 
             if (rejectForm) {
-                rejectForm.addEventListener('submit', function(e) {
+                rejectForm.addEventListener('submit', function (e) {
                     const reason = rejectionReasonTextarea ? rejectionReasonTextarea.value.trim() : '';
-                    
                     if (!reason) {
                         e.preventDefault();
-                        if (rejectionReasonError) {
-                            rejectionReasonError.style.display = 'block';
-                        }
-                        if (rejectionReasonTextarea) {
-                            rejectionReasonTextarea.focus();
-                        }
+                        if (rejectionReasonError) rejectionReasonError.style.display = 'block';
+                        if (rejectionReasonTextarea) rejectionReasonTextarea.focus();
                         return false;
                     }
-
-                    if (rejectionReasonInput) {
-                        rejectionReasonInput.value = reason;
-                    }
-                    
+                    if (rejectionReasonInput) rejectionReasonInput.value = reason;
                     return true;
                 });
             }
 
             if (rejectionReasonTextarea) {
-                rejectionReasonTextarea.addEventListener('input', function() {
-                    if (this.value.trim() && rejectionReasonError) {
-                        rejectionReasonError.style.display = 'none';
-                    }
+                rejectionReasonTextarea.addEventListener('input', function () {
+                    if (this.value.trim() && rejectionReasonError) rejectionReasonError.style.display = 'none';
                 });
             }
 
+            // Eliminar
             document.querySelectorAll('.btn-delete-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
                     if (!deleteIdInput) return;
                     deleteIdInput.value = id;
-                    deleteMsg.textContent = `¿Confirmas eliminar el turno de ${patient}? Esta acción no se puede deshacer.`;
+                    if (deleteMsgEl) deleteMsgEl.textContent = `¿Confirmas eliminar el turno de ${patient}? Esta acción no se puede deshacer.`;
                     if (deleteModal) deleteModal.show();
                 });
             });
 
+            // Cancelar
             document.querySelectorAll('.btn-cancel-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    const datetime = this.getAttribute('data-datetime');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
+                    const datetime = this.getAttribute('data-datetime') || '';
                     if (!cancelIdInput) return;
                     cancelIdInput.value = id;
-                    cancelMsg.textContent = `¿Confirmas cancelar el turno de ${patient} programado para ${datetime}?`;
-                    
+                    if (cancelMsgEl) cancelMsgEl.textContent = `¿Confirmas cancelar el turno de ${patient} programado para ${datetime}?`;
                     if (cancelReasonTextarea) cancelReasonTextarea.value = '';
                     if (cancelReasonError) cancelReasonError.style.display = 'none';
-
                     if (cancelModal) cancelModal.show();
                 });
             });
 
             if (cancelForm) {
-                cancelForm.addEventListener('submit', function(e) {
+                cancelForm.addEventListener('submit', function (e) {
                     const reason = cancelReasonTextarea ? cancelReasonTextarea.value.trim() : '';
-                    
                     if (!reason) {
                         e.preventDefault();
-                        if (cancelReasonError) {
-                            cancelReasonError.style.display = 'block';
-                        }
-                        if (cancelReasonTextarea) {
-                            cancelReasonTextarea.focus();
-                        }
+                        if (cancelReasonError) cancelReasonError.style.display = 'block';
+                        if (cancelReasonTextarea) cancelReasonTextarea.focus();
                         return false;
                     }
-
-                    if (cancelReasonInput) {
-                        cancelReasonInput.value = reason;
-                    }
-
+                    if (cancelReasonInput) cancelReasonInput.value = reason;
                     return true;
                 });
             }
 
             if (cancelReasonTextarea) {
-                cancelReasonTextarea.addEventListener('input', function() {
-                    if (this.value.trim() && cancelReasonError) {
-                        cancelReasonError.style.display = 'none';
-                    }
+                cancelReasonTextarea.addEventListener('input', function () {
+                    if (this.value.trim() && cancelReasonError) cancelReasonError.style.display = 'none';
                 });
             }
 
+            // Completar
             document.querySelectorAll('.btn-complete-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    const datetime = this.getAttribute('data-datetime');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
+                    const datetime = this.getAttribute('data-datetime') || '';
                     if (!completeIdInput) return;
                     completeIdInput.value = id;
-                    completeMsg.textContent = `¿Confirmas que se realizó exitosamente el turno de ${patient} del ${datetime}?`;
+                    if (completeMsgEl) completeMsgEl.textContent = `¿Confirmas que se realizó exitosamente el turno de ${patient} del ${datetime}?`;
                     if (completeModal) completeModal.show();
                 });
             });
 
+            // Reprogramar
             document.querySelectorAll('.btn-reprogram-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function () {
                     const id = this.getAttribute('data-id');
-                    const patient = this.getAttribute('data-patient');
-                    const typeId = this.getAttribute('data-typeid');
-                    const date = this.getAttribute('data-date');
-                    const hour = this.getAttribute('data-hour');
-                    const professionalId = this.getAttribute('data-professionalid');
-                    
+                    const patient = this.getAttribute('data-patient') || '';
+                    const typeId = this.getAttribute('data-typeid') || '';
+                    const date = this.getAttribute('data-date') || '';
+                    const hour = this.getAttribute('data-hour') || '';
+                    const professionalId = this.getAttribute('data-professionalid') || '';
+
                     if (!reprogramIdInput) return;
                     reprogramIdInput.value = id;
 
-                    reprogTipoSelect.value = typeId;
-                    reprogFechaInput.value = date;
+                    if (reprogTipoSelect) reprogTipoSelect.value = typeId;
+                    if (reprogFechaInput) reprogFechaInput.value = date;
+                    if (reprogProfessionalSelect) reprogProfessionalSelect.value = professionalId;
+                    if (reprogHourInput) reprogHourInput.value = hour;
 
-                    const event = new Event('change', { bubbles: true });
-                    reprogTipoSelect.dispatchEvent(event);
-                    reprogFechaInput.dispatchEvent(event);
-
-                    if (professionalId) {
-                        reprogProfessionalSelect.value = professionalId;
-                    } else {
-                        reprogProfessionalSelect.value = '';
+                    if (reprogTipoSelect && reprogFechaInput) {
+                        loadHorarios(reprogTipoSelect.value, reprogFechaInput.value);
                     }
 
-                    reprogramMsg.innerHTML = `Modifica los datos del turno y confirma la reprogramación para el paciente ${patient}.`;
+                    if (reprogramMsgEl) reprogramMsgEl.textContent = `Modifica los datos del turno y confirma la reprogramación para el paciente ${patient}.`;
 
                     if (reprogramModal) reprogramModal.show();
                 });
             });
-        })();
-    </script>
 
-    <script>
-    (function () {
-        const reprogramModalEl = document.getElementById('reprogramModal');
-        const reprogramModal = reprogramModalEl ? new bootstrap.Modal(reprogramModalEl) : null;
-        const reprogramIdInput = document.getElementById('reprogramShiftId');
-        const tipoSelect = document.getElementById('reprogTipoSelect');
-        const fechaInput = document.getElementById('reprogFecha');
-        const horariosContainer = document.getElementById('reprogHorariosContainer');
-        const hourHidden = document.getElementById('reprogHourInput');
-        const professionalSelect = document.getElementById('reprogProfessionalSelect');
-
-        function loadHorarios(tipoId, fecha) {
-            horariosContainer.innerHTML = '<small class="text-muted">Cargando horarios...</small>';
-            if (!tipoId || !fecha) {
-                horariosContainer.innerHTML = '<small class="text-muted">Selecciona tipo y fecha para ver horarios</small>';
-                return;
+            if (reprogTipoSelect) {
+                reprogTipoSelect.addEventListener('change', () => loadHorarios(reprogTipoSelect.value, reprogFechaInput.value));
+            }
+            if (reprogFechaInput) {
+                reprogFechaInput.addEventListener('change', () => loadHorarios(reprogTipoSelect.value, reprogFechaInput.value));
             }
 
-            fetch('@Url.Action("ObtenerHorarios", "Shift")?tipoTurnoId=' + encodeURIComponent(tipoId) + '&fecha=' + encodeURIComponent(fecha))
-                .then(r => r.json())
-                .then(data => {
-                    if (!Array.isArray(data)) {
-                        horariosContainer.innerHTML = `<small class="text-muted">${data.mensaje || 'No hay horarios disponibles'}</small>`;
-                        return;
+            if (reprogramForm) {
+                reprogramForm.addEventListener('submit', function (e) {
+                    if (reprogTipoSelect && !reprogTipoSelect.value) {
+                        e.preventDefault();
+                        alert('Selecciona un tipo de turno.');
+                        return false;
                     }
-
-                    if (data.length === 0) {
-                        horariosContainer.innerHTML = '<small class="text-muted">No hay horarios disponibles para este día</small>';
-                        return;
+                    if (reprogFechaInput && !reprogFechaInput.value) {
+                        e.preventDefault();
+                        alert('Selecciona una fecha.');
+                        return false;
                     }
-
-                    horariosContainer.innerHTML = '';
-                    data.forEach(h => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'btn btn-outline-primary btn-sm';
-                        btn.textContent = h.hora;
-                        btn.dataset.hora = h.hora;
-                        if (!h.disponible) {
-                            btn.disabled = true;
-                            btn.classList.add('btn-secondary');
-                        } else {
-                            btn.addEventListener('click', function () {
-                                horariosContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                                this.classList.add('active');
-                                hourHidden.value = this.dataset.hora;
-                            });
-                        }
-
-                        horariosContainer.appendChild(btn);
-                    });
-                })
-                .catch(err => {
-                    horariosContainer.innerHTML = '<small class="text-muted">Error al cargar horarios</small>';
-                    console.error(err);
+                    if (reprogHourInput && !reprogHourInput.value) {
+                        e.preventDefault();
+                        alert('Selecciona una hora.');
+                        return false;
+                    }
                 });
-        }
-
-        document.querySelectorAll('.btn-reprogram-trigger').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const typeId = this.getAttribute('data-typeid');
-                const date = this.getAttribute('data-date');
-                const hour = this.getAttribute('data-hour');
-                const profId = this.getAttribute('data-professionalid');
-
-                if (!reprogramIdInput) return;
-                reprogramIdInput.value = id;
-                if (tipoSelect) tipoSelect.value = typeId || '';
-                if (fechaInput) fechaInput.value = date || '';
-                if (professionalSelect) professionalSelect.value = profId || '';
-                if (hourHidden) hourHidden.value = hour || '';
-
-                loadHorarios(tipoSelect.value, fechaInput.value);
-
-                if (reprogramModal) reprogramModal.show();
-            });
-        });
-
-        if (tipoSelect) {
-            tipoSelect.addEventListener('change', () => loadHorarios(tipoSelect.value, fechaInput.value));
-        }
-        if (fechaInput) {
-            fechaInput.addEventListener('change', () => loadHorarios(tipoSelect.value, fechaInput.value));
-        }
-
-        const form = document.getElementById('reprogramForm');
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                if (!tipoSelect.value) {
-                    e.preventDefault();
-                    alert('Selecciona un tipo de turno.');
-                    return false;
-                }
-                if (!fechaInput.value) {
-                    e.preventDefault();
-                    alert('Selecciona una fecha.');
-                    return false;
-                }
-                if (!hourHidden.value) {
-                    e.preventDefault();
-                    alert('Selecciona una hora.');
-                    return false;
-                }
-            });
-        }
-    })();
-</script>
+            }
+        })();
+    </script>
 }

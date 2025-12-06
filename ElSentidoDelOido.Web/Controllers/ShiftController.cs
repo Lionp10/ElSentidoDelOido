@@ -54,7 +54,7 @@ namespace ElSentidoDelOido.Web.Controllers
         {
             var tipos = await _shiftTypeService.GetAllAsync();
 
-            var activos = tipos.Where(t => t.Enabled.GetValueOrDefault()).ToList();
+            var activos = tipos.Where(t => t.Enabled == true).ToList();
 
             var model = new ShiftIndexViewModel
             {
@@ -70,7 +70,7 @@ namespace ElSentidoDelOido.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var tipos = await _shiftTypeService.GetAllAsync();
-                var activos = tipos.Where(t => t.Enabled.GetValueOrDefault()).ToList();
+                var activos = tipos.Where(t => t.Enabled == true).ToList();
                 
                 ViewBag.Errors = ModelState
                     .Where(x => x.Value.Errors.Count > 0)
@@ -110,7 +110,7 @@ namespace ElSentidoDelOido.Web.Controllers
             }
 
             var tiposError = await _shiftTypeService.GetAllAsync();
-            var activosError = tiposError.Where(t => t.Enabled.GetValueOrDefault()).ToList();
+            var activosError = tiposError.Where(t => t.Enabled == true).ToList();
             
             var modelError = new ShiftIndexViewModel
             {
@@ -219,7 +219,7 @@ namespace ElSentidoDelOido.Web.Controllers
                 TipoTurnoFiltro = tipoTurnoId,
                 ProfessionalFiltro = professionalId,
                 ShiftTypes = shiftTypes,
-                Professionals = professionals.Where(p => p.Enabled.GetValueOrDefault()),
+                Professionals = professionals.Where(p => p.Enabled == true),
                 EstadosDisponibles = estadosDisponibles,
                 CurrentPage = page,
                 PageSize = pageSize,
@@ -709,19 +709,55 @@ namespace ElSentidoDelOido.Web.Controllers
                     return RedirectToAction(nameof(Main));
                 }
 
+                var targetDate = date.Date;
+                if (targetDate < DateTime.Today)
+                {
+                    TempData["Mensaje"] = "La fecha de reprogramación debe ser hoy o posterior.";
+                    return RedirectToAction(nameof(Main));
+                }
+
+                if (targetDate.DayOfWeek == DayOfWeek.Saturday || targetDate.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    TempData["Mensaje"] = "No se puede reprogramar a fines de semana. Selecciona un día hábil.";
+                    return RedirectToAction(nameof(Main));
+                }
+
+                var feriados = await _holidaysService.GetAllAsync();
+                if (feriados.Any(f => f.Date.Date == targetDate))
+                {
+                    TempData["Mensaje"] = "La fecha seleccionada es un feriado. Selecciona otro día hábil.";
+                    return RedirectToAction(nameof(Main));
+                }
+
                 int? scheduleId = null;
                 try
                 {
-                    var schedules = await _shiftScheduleService.GetAvailabilityAsync(tipoTurnoId, date.Date);
-                    var matched = schedules.FirstOrDefault(s => string.Equals(s.Hour?.Trim(), hour?.Trim(), StringComparison.OrdinalIgnoreCase));
+                    var schedules = await _shiftScheduleService.GetAvailabilityAsync(tipoTurnoId, targetDate);
+
+                    var matched = schedules?.FirstOrDefault(s => string.Equals(s.Hour?.Trim(), hour?.Trim(), StringComparison.OrdinalIgnoreCase));
+
                     if (matched != null)
                     {
+                        if (matched.Enabled != true)
+                        {
+                            TempData["Mensaje"] = "El horario seleccionado no está disponible.";
+                            return RedirectToAction(nameof(Main));
+                        }
+
                         scheduleId = matched.Id;
+                    }
+                    else
+                    {
+                        if (schedules != null && schedules.Any())
+                        {
+                            TempData["Mensaje"] = "La hora seleccionada no está disponible para el tipo de turno y fecha indicados.";
+                            return RedirectToAction(nameof(Main));
+                        }
                     }
                 }
                 catch
                 {
-                    // si falla la búsqueda de horarios seguimos permitiendo actualizar con valor de hora libre
+                    // si falla la comprobación de horarios dejamos que el servicio valide
                 }
 
                 existing.ShiftTypeId = tipoTurnoId;
@@ -729,6 +765,8 @@ namespace ElSentidoDelOido.Web.Controllers
                 existing.ScheduleId = scheduleId;
                 existing.ScheduleHour = hour;
                 existing.ProfessionalId = professionalId;
+
+                existing.ShiftStateId = ShiftStateEnum.Confirmado.ToString();
 
                 await _shiftService.UpdateAsync(existing);
 
@@ -826,7 +864,7 @@ namespace ElSentidoDelOido.Web.Controllers
                     }
                 }
 
-                TempData["Mensaje"] = "Turno reprogramado correctamente.";
+                TempData["Mensaje"] = "Turno reprogramado y confirmado correctamente.";
             }
             catch (Exception ex)
             {
