@@ -52,7 +52,8 @@ namespace ElSentidoDelOido.Web.Controllers
             }
         }
 
-        public async Task<IActionResult> Edi0t(int id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
             var existing = await _service.GetByIdAsync(id);
             if (existing == null) return NotFound();

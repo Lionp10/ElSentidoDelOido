@@ -90,5 +90,37 @@ namespace ElSentidoDelOido.Web.Controllers
             await _service.ReactivateAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var item = await _service.GetByIdAsync(id);
+            if (item == null)
+                return NotFound();
+
+            var dto = new ProfessionalUpdateDTO
+            {
+                Id = item.Id,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Email = item.Email,
+                Phone = item.Phone,
+                Address = item.Address,
+                Enabled = true
+            };
+
+            try
+            {
+                await _service.UpdateAsync(dto);
+                TempData["Mensaje"] = "Profesional activado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Mensaje"] = $"Error al activar: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

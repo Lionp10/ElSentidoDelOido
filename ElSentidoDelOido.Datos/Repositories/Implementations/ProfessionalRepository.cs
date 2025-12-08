@@ -16,8 +16,8 @@ namespace ElSentidoDelOido.Datos.Repositories.Implementations
 
         public async Task<IEnumerable<Professional>> GetAllAsync()
         {
+            // Antes se filtraba por Enabled == true; ahora devolvemos todos los profesionales
             return await _context.Professionals
-                .Where(p => p.Enabled == true)
                 .AsNoTracking()
                 .ToListAsync();
         }

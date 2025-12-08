@@ -372,7 +372,8 @@
             const actionForm = document.getElementById('actionForm');
             const confirmBtn = document.getElementById('actionConfirmBtn');
 
-            const reactivateUrl = '@Url.Action("Reactivate", "Professional")';
+            // Usar la nueva acción Activate (coherente con Users)
+            const activateUrl = '@Url.Action("Activate", "Professional")';
             const deleteUrl = '@Url.Action("Delete", "Professional")';
 
             document.querySelectorAll('.btn-confirm-action').forEach(btn => {
@@ -385,7 +386,7 @@
 
                     if (action === 'activate') {
                         messageEl.textContent = `¿Confirmas dar de alta a ${name.trim()}? Esta acción volverá a activar al profesional.`;
-                        actionForm.action = reactivateUrl;
+                        actionForm.action = activateUrl;
                         confirmBtn.classList.remove('btn-danger');
                         confirmBtn.classList.add('btn-success');
                         confirmBtn.textContent = 'Confirmar alta';

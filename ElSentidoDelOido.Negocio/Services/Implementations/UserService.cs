@@ -50,11 +50,17 @@ namespace ElSentidoDelOido.Negocio.Services.Implementations
             if (entity == null)
                 throw new KeyNotFoundException($"User with id {dto.Id} not found.");
 
+            var originalPassword = entity.Password;
+
             _mapper.Map(dto, entity);
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
                 entity.Password = Encrypt.HashPassword(dto.Password);
+            }
+            else
+            {
+                entity.Password = originalPassword;
             }
 
             var updated = await _repository.UpdateAsync(entity);
